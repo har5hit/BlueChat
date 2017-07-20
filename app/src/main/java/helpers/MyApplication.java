@@ -7,7 +7,7 @@ import android.content.Context;
  * Created by harshit on 16-07-2017.
  */
 
-class MyApplication extends Application {
+public class MyApplication extends Application {
 
 
     public static Context INSTANCE;

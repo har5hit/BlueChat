@@ -8,11 +8,18 @@ import io.realm.annotations.PrimaryKey;
  */
 
 public class User extends RealmObject{
+    public User() {
+    }
 
+    public User(String device_name, String macAddress) {
+        this.device_name = device_name;
+        this.macAddress = macAddress;
+    }
 
     public String name;
+    public String profile_pic;
     public String device_name;
-    public int messafe_id;
+    public int message_id;
 
     @PrimaryKey
     public String macAddress;
