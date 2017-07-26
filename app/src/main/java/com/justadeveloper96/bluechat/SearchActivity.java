@@ -9,22 +9,32 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
-import helpers.bluetooth.BlueHelper;
 import helpers.RealmManager;
 import helpers.Utils;
-import model.User;
+import helpers.bluetooth.BlueHelper;
+import model.BluetoothDeviceWrapper;
 
-public class SearchActivity extends BlueActivity implements Runnable {
+import static helpers.Utils.getContext;
 
-
-    private ContactsListFragment fragment;
+public class SearchActivity extends BlueActivity implements Runnable, SearchAdapter.ItemClickListener {
+    //private ContactsListFragment fragment;
     private Button scan;
+    private RecyclerView recyclerView;
+
+    private SearchAdapter sAdapter;
+    private List<BluetoothDevice> list;
+
 
     private static final String TAG = "SearchActivity";
     @Override
@@ -33,12 +43,21 @@ public class SearchActivity extends BlueActivity implements Runnable {
         setContentView(R.layout.activity_search);
 
         scan= (Button) findViewById(R.id.btn_scan);
-        fragment=ContactsListFragment.newInstance(Constants.FIND_NEW);
+        recyclerView= (RecyclerView) findViewById(R.id.recycler_view);
+        list=new ArrayList<>();
+
+        sAdapter=new SearchAdapter(list,this);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(sAdapter);
+
+        //fragment=ContactsListFragment.newInstance(Constants.FIND_NEW);
 
         Log.d(TAG, "onCreate: fragment created");
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 
-        setFragment(fragment);
+        //setFragment(fragment);
 
         Log.d(TAG, "onCreate: fragment set");
 
@@ -67,17 +86,18 @@ public class SearchActivity extends BlueActivity implements Runnable {
 
     public void searchForPairedDevices() {
 
-        RealmManager.deleteAll(RealmManager.getAllPairedDevices());
+        //RealmManager.deleteAll(RealmManager.getAllPairedDevices());
         Set<BluetoothDevice> devices= BlueHelper.getAllPairedDevices();
-
-        for(BluetoothDevice device:devices)
+        list.addAll(devices);
+        /*for(BluetoothDevice device:devices)
         {
 
             Log.d(TAG, "searchForPairedDevices: data added in list");
-            fragment.getList().add(new User(device.getName(),device.getAddress()));
+            //fragment.getList().add(new User(device.getName(),device.getAddress()));
             //    RealmManager.saveData(new User(device.getName(),device.getAddress()));
-        }
-        fragment.getAdapter().notifyDataSetChanged();
+            list.add(device);
+        }*/
+        sAdapter.notifyDataSetChanged();
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND.
@@ -88,10 +108,11 @@ public class SearchActivity extends BlueActivity implements Runnable {
                 // Discovery has found a device. Get the BluetoothDevice
                 // object and its info from the Intent.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-               // RealmManager.saveData(new User(device.getName(),device.getAddress()));
-                fragment.getList().add(new User(device.getName(),device.getAddress()));
-                fragment.getAdapter().notifyItemInserted(fragment.getList().size());
+                // RealmManager.saveData(new User(device.getName(),device.getAddress()));
+               /* fragment.getList().add(new User(device.getName(),device.getAddress()));
+                fragment.getAdapter().notifyItemInserted(fragment.getList().size());*/
+                list.add(device);
+                sAdapter.notifyItemInserted(list.size()-1);
 
                 Utils.log("found devices",device.getName()+" / "+device.getAddress());
             }
@@ -108,7 +129,13 @@ public class SearchActivity extends BlueActivity implements Runnable {
 
     public void scanNew(View v)
     {
-        fragment.getList().clear();
+        /*fragment.getList().clear();
+        searchForPairedDevices();
+        BlueHelper.startDiscovery();
+        scan.setEnabled(false);
+        unlockScan();*/
+
+        list.clear();
         searchForPairedDevices();
         BlueHelper.startDiscovery();
         scan.setEnabled(false);
@@ -124,5 +151,13 @@ public class SearchActivity extends BlueActivity implements Runnable {
     @Override
     public void run() {
         scan.setEnabled(true);
+    }
+
+    @Override
+    public void onItemClick(int position) {
+        for (int i = 0; i < list.size(); i++) {
+            RealmManager.saveData(new BluetoothDeviceWrapper(i,list.get(i)));
+        }
+        startActivity(new Intent(this,ChatActivity.class).putExtra(Constants.POSITION,position));
     }
 }

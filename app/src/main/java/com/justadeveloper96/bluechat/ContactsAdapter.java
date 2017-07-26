@@ -1,5 +1,6 @@
 package com.justadeveloper96.bluechat;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,8 +10,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import model.User;
-
 /**
  * Created by sankalp on 20/7/17.
  */
@@ -18,10 +17,10 @@ import model.User;
 public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyViewVolder> {
 
 
-    List<User> list;
+    List<BluetoothDevice> list;
     Context ctx;
 
-    public ContactsAdapter(Context ctx,List<User> list) {
+    public ContactsAdapter(Context ctx,List<BluetoothDevice> list) {
         this.list = list;
         this.ctx = ctx;
     }
@@ -34,9 +33,9 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
 
     @Override
     public void onBindViewHolder(MyViewVolder holder, int position) {
-        User user=list.get(position);
-        holder.name.setText(user.name);
-        holder.device_name.setText(user.device_name);
+        BluetoothDevice BluetoothDevice=list.get(position);
+        holder.name.setText(BluetoothDevice.getName());
+        holder.device_name.setText(BluetoothDevice.getAddress());
     }
 
     @Override

@@ -15,11 +15,11 @@
         android:text="Scan"
         android:onClick="scanNew"/>
 
-    <FrameLayout
+    <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/fl_container"
+        android:id="@+id/recycler_view"
         android:layout_above="@id/btn_save"
-        ></FrameLayout>
+        ></android.support.v7.widget.RecyclerView>
 </RelativeLayout>
 

@@ -1,5 +1,6 @@
 package com.justadeveloper96.bluechat;
 
+import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,10 +15,6 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import helpers.RealmHelper;
-import io.realm.RealmQuery;
-import model.User;
-
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -29,9 +26,9 @@ public class ContactsListFragment extends Fragment {
     private ContactsAdapter cAdapter;
     private int type;
 
-    public List<User> list;
+    public List<BluetoothDevice> list;
 
-    public List<User> getList() {
+    public List<BluetoothDevice> getList() {
         return list;
     }
 
@@ -78,17 +75,6 @@ public class ContactsListFragment extends Fragment {
     private void setUpList(View view) {
         recyclerView= (RecyclerView) view.findViewById(R.id.recycler_view);
         type= getArguments().getInt("type");
-
-
-        RealmQuery<User> query;
-        if (type==Constants.FIND_NEW)
-        {
-            query= RealmHelper.getRealm(getContext()).where(User.class).equalTo("message_id",0);
-            ((SearchActivity)getActivity()).searchForPairedDevices();
-
-        }else {
-            query= RealmHelper.getRealm(getContext()).where(User.class).notEqualTo("message_id",0);
-        }
 
         Log.d(TAG, "setUpList: cadapter");
 

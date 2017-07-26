@@ -1,5 +1,7 @@
 package model;
 
+import android.bluetooth.BluetoothDevice;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -23,4 +25,7 @@ public class User extends RealmObject{
 
     @PrimaryKey
     public String macAddress;
+
+
+    public BluetoothDevice device;
 }
