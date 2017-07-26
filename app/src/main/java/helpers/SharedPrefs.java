@@ -12,7 +12,10 @@ public class SharedPrefs {
 
     public static final String IS_LOGGED_IN="is_logged_in";
     public static final String USER_NAME="user_name";
+    public static final String USER_ID="user_id";
     private static final String PROFILE_PIC = "PROFILE_PIC";
+    public static final String UUID="uuid";
+
 
 
     SharedPreferences prefs;

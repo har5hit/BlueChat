@@ -1,27 +1,16 @@
 package com.justadeveloper96.bluechat;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.util.Set;
-
-import helpers.BlueHelper;
-import helpers.RealmHelper;
 import helpers.SharedPrefs;
-import model.User;
 
 public class MainActivity extends BlueActivity {
 
@@ -39,7 +28,8 @@ public class MainActivity extends BlueActivity {
                /* Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
 
-               startActivity(new Intent(MainActivity.this,SearchActivity.class));
+              // startActivity(new Intent(MainActivity.this,SearchActivity.class));
+               startActivity(new Intent(MainActivity.this,ChatActivity.class));
             }
         });
 

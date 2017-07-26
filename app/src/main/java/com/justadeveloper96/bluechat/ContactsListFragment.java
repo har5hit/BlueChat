@@ -1,6 +1,5 @@
 package com.justadeveloper96.bluechat;
 
-import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,11 +13,8 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import helpers.BlueHelper;
 import helpers.RealmHelper;
-import helpers.RealmManager;
 import io.realm.RealmQuery;
 import model.User;
 

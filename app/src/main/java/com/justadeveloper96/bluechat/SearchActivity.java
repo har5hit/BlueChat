@@ -1,6 +1,5 @@
 package com.justadeveloper96.bluechat;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,18 +9,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import java.util.Set;
 
-import helpers.BlueHelper;
-import helpers.RealmHelper;
+import helpers.bluetooth.BlueHelper;
 import helpers.RealmManager;
 import helpers.Utils;
-import io.realm.Realm;
 import model.User;
 
 public class SearchActivity extends BlueActivity implements Runnable {

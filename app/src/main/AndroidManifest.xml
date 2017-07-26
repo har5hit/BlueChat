@@ -25,7 +25,8 @@
         </activity>
         <activity android:name=".SearchActivity" />
         <activity android:name=".BlueActivity" />
-        <activity android:name=".ProfileActivity"></activity>
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".ChatActivity"></activity>
     </application>
 
 </manifest>

@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import helpers.BlueHelper;
+import helpers.bluetooth.BlueHelper;
 
 public class BlueActivity extends AppCompatActivity {
 
