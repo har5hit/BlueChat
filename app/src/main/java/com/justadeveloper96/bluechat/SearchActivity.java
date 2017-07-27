@@ -1,12 +1,16 @@
 package com.justadeveloper96.bluechat;
 
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -20,14 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import helpers.RealmManager;
+import helpers.PermissionHelper;
 import helpers.Utils;
 import helpers.bluetooth.BlueHelper;
-import model.BluetoothDeviceWrapper;
 
 import static helpers.Utils.getContext;
 
-public class SearchActivity extends BlueActivity implements Runnable, SearchAdapter.ItemClickListener {
+public class SearchActivity extends BlueActivity implements Runnable, ItemClickListener, PermissionHelper.PermissionsListener {
     //private ContactsListFragment fragment;
     private Button scan;
     private RecyclerView recyclerView;
@@ -35,6 +38,7 @@ public class SearchActivity extends BlueActivity implements Runnable, SearchAdap
     private SearchAdapter sAdapter;
     private List<BluetoothDevice> list;
 
+    private PermissionHelper permissionHelper;
 
     private static final String TAG = "SearchActivity";
     @Override
@@ -55,6 +59,10 @@ public class SearchActivity extends BlueActivity implements Runnable, SearchAdap
         //fragment=ContactsListFragment.newInstance(Constants.FIND_NEW);
 
         Log.d(TAG, "onCreate: fragment created");
+
+
+        permissionHelper=new PermissionHelper(this).setListener(this);
+
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 
         //setFragment(fragment);
@@ -65,6 +73,7 @@ public class SearchActivity extends BlueActivity implements Runnable, SearchAdap
         registerReceiver(mReceiver, filter);
 
 //        searchForPairedDevices();
+
 
 
     }
@@ -122,10 +131,17 @@ public class SearchActivity extends BlueActivity implements Runnable, SearchAdap
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        permissionHelper.onDestroy();
         // Don't forget to unregister the ACTION_FOUND receiver.
         unregisterReceiver(mReceiver);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        permissionHelper.onRequestPermissionsResult(requestCode,permissions,grantResults);
+    }
 
     public void scanNew(View v)
     {
@@ -135,11 +151,11 @@ public class SearchActivity extends BlueActivity implements Runnable, SearchAdap
         scan.setEnabled(false);
         unlockScan();*/
 
-        list.clear();
-        searchForPairedDevices();
-        BlueHelper.startDiscovery();
-        scan.setEnabled(false);
-        unlockScan();
+        permissionHelper.requestPermission(
+                new String[]{
+                        Manifest.permission.BLUETOOTH_ADMIN,
+                        Manifest.permission.BLUETOOTH},200);
+
     }
 
 
@@ -155,9 +171,30 @@ public class SearchActivity extends BlueActivity implements Runnable, SearchAdap
 
     @Override
     public void onItemClick(int position) {
-        for (int i = 0; i < list.size(); i++) {
-            RealmManager.saveData(new BluetoothDeviceWrapper(i,list.get(i)));
-        }
-        startActivity(new Intent(this,ChatActivity.class).putExtra(Constants.POSITION,position));
+        //  RealmManager.getRealm().where(BluetoothDeviceWrapper.class).findAll().deleteAllFromRealm();
+
+        BlueHelper.getBluetoothAdapter().cancelDiscovery();
+
+        startActivity(new Intent(this,ChatActivity.class)
+                .putExtra(Constants.MAC_ADDRESS,list.get(position).getAddress())
+                .putExtra(Constants.NAME,list.get(position).getName())
+        );
+        finish();
+    }
+
+    @Override
+    public void onPermissionGranted(int request_code) {
+        Utils.log("permission granted");
+        list.clear();
+        searchForPairedDevices();
+        BlueHelper.startDiscovery();
+        scan.setEnabled(false);
+        unlockScan();
+
+    }
+
+    @Override
+    public void onPermissionRejectedManyTimes(@NonNull List<String> rejectedPerms, int request_code) {
+
     }
 }

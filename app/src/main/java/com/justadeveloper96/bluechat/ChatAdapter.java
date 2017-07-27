@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import helpers.SharedPrefs;
 import model.Message;
 
 /**
@@ -22,12 +21,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
 
     private static final int SELF = 531;
     private static final int OTHER = 997;
-    private static int USER_ID;
+    private static String MY_MAC;
 
-    public ChatAdapter(Context ctx, List<Message> list) {
+    public ChatAdapter(Context ctx, List<Message> list,String my_mac) {
         this.ctx = ctx;
         this.list = list;
-        USER_ID= SharedPrefs.getPrefs().getInt(SharedPrefs.USER_ID);
+        MY_MAC = my_mac;
     }
 
     @Override
@@ -46,6 +45,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
+        holder.text.setText(list.get(position).message);
     }
 
     @Override
@@ -57,12 +57,13 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
         TextView text;
         public MyViewHolder(View itemView) {
             super(itemView);
+            text= (TextView) itemView.findViewById(R.id.text);
         }
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (list.get(position).user_id==USER_ID)
+        if (list.get(position).user_mac.equals(MY_MAC))
         {
             return SELF;
         }

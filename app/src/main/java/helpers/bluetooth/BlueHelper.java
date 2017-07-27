@@ -17,6 +17,8 @@ public class BlueHelper {
 
     public static final int REQUEST_ENABLE_BT = 345;
 
+    public static long counter=0;
+
     BlueHelper() {
     }
 
@@ -33,10 +35,13 @@ public class BlueHelper {
     }
 
     public static void setDiscoverable(Context ctx){
-        Intent discoverableIntent =
-                new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-        ctx.startActivity(discoverableIntent);
+        if (counter==0 || ((System.currentTimeMillis()/1000)-counter)>300) {
+            Intent discoverableIntent =
+                    new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            ctx.startActivity(discoverableIntent);
+            counter=System.currentTimeMillis()/1000;
+        }
     }
 
     public static Set<BluetoothDevice> getAllPairedDevices()

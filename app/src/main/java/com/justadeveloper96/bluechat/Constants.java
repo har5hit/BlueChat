@@ -15,5 +15,7 @@ public class Constants {
     public static final UUID uuid=UUID.fromString("8df45a3f-31dc-4322-8dd6-42247842756a");
     public static final String app_name="BlueChat";
     public static final String POSITION="position";
+    public static final String MAC_ADDRESS="mac_address";
+    public static final String NAME="name";
 
 }

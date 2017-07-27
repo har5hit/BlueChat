@@ -1,7 +1,5 @@
 package model;
 
-import android.bluetooth.BluetoothDevice;
-
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -13,9 +11,10 @@ public class User extends RealmObject{
     public User() {
     }
 
-    public User(String device_name, String macAddress) {
-        this.device_name = device_name;
+    public User(String name,String macAddress,int message_id) {
+        this.name=name;
         this.macAddress = macAddress;
+        this.message_id=message_id;
     }
 
     public String name;
@@ -26,6 +25,14 @@ public class User extends RealmObject{
     @PrimaryKey
     public String macAddress;
 
-
-    public BluetoothDevice device;
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", profile_pic='" + profile_pic + '\'' +
+                ", device_name='" + device_name + '\'' +
+                ", message_id=" + message_id +
+                ", macAddress='" + macAddress + '\'' +
+                '}';
+    }
 }

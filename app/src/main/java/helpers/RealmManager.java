@@ -1,6 +1,6 @@
 package helpers;
 
-import android.content.Context;
+import java.util.Collection;
 
 import io.realm.Realm;
 import io.realm.RealmObject;
@@ -21,7 +21,7 @@ public class RealmManager {
 
     public static RealmQuery<User> getAllStoredContacts()
     {
-        return getRealm().where(User.class).notEqualTo("message_id",0);
+        return getRealm().where(User.class);
     }
 
     public static RealmQuery<User> getAllPairedDevices()
@@ -30,6 +30,13 @@ public class RealmManager {
     }
 
     public static <T extends RealmObject> void saveData(T data)
+    {
+        getRealm().beginTransaction();
+        getRealm().insertOrUpdate(data);
+        getRealm().commitTransaction();
+    }
+
+    public static <T extends RealmObject> void saveData(Collection<T> data)
     {
         getRealm().beginTransaction();
         getRealm().insertOrUpdate(data);

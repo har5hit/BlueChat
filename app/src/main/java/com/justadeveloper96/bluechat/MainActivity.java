@@ -6,14 +6,14 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import helpers.SharedPrefs;
+import android.view.View;
 
 public class MainActivity extends BlueActivity {
 
+    private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,21 +29,19 @@ public class MainActivity extends BlueActivity {
                         .setAction("Action", null).show();*/
 
               // startActivity(new Intent(MainActivity.this,SearchActivity.class));
-               startActivity(new Intent(MainActivity.this,ChatActivity.class));
+               startActivity(new Intent(MainActivity.this,SearchActivity.class));
             }
         });
 
-        if (!SharedPrefs.getPrefs().isloggedIn())
+     /*   if (!SharedPrefs.getPrefs().isloggedIn())
         {
             openProfile();
             return;
-        }
+        }*/
 
-        setFragment(ContactsListFragment.newInstance(Constants.FIND_STORED));
+        setFragment(new ContactsListFragment());
 
     }
-
-
 
     private void setFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -64,7 +62,7 @@ public class MainActivity extends BlueActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -85,4 +83,10 @@ public class MainActivity extends BlueActivity {
     }
 
 
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: ");
+        finish();
+      //  super.onBackPressed();
+    }
 }

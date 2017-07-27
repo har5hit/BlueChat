@@ -7,7 +7,11 @@ import android.util.Log;
 
 import com.justadeveloper96.bluechat.Constants;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
+
+import model.SocketEvent;
 
 /**
  * Created by harshith on 24/7/17.
@@ -57,7 +61,7 @@ public class AcceptThread extends Thread {
     }
 
     private void manageMyConnectedSocket(BluetoothSocket socket) {
-
+        EventBus.getDefault().post(new SocketEvent(socket));
     }
 
     // Closes the connect socket and causes the thread to finish.

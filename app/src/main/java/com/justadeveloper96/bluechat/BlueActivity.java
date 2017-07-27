@@ -17,6 +17,7 @@ public class BlueActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         BlueHelper.init(this);
+        BlueHelper.setDiscoverable(this);
     }
 
     @Override

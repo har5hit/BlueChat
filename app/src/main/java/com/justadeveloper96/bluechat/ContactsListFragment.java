@@ -1,6 +1,6 @@
 package com.justadeveloper96.bluechat;
 
-import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,10 +15,13 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+import helpers.RealmManager;
+import model.User;
+
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ContactsListFragment extends Fragment {
+public class ContactsListFragment extends Fragment implements ItemClickListener {
 
     private static final String TAG = "ContactsListFragment";
 
@@ -26,9 +29,9 @@ public class ContactsListFragment extends Fragment {
     private ContactsAdapter cAdapter;
     private int type;
 
-    public List<BluetoothDevice> list;
+    public List<User> list;
 
-    public List<BluetoothDevice> getList() {
+    public List<User> getList() {
         return list;
     }
 
@@ -39,21 +42,21 @@ public class ContactsListFragment extends Fragment {
     public ContactsListFragment() {
     }
 
-    public static ContactsListFragment newInstance(int type) {
+   /* public static ContactsListFragment newInstance(int type) {
 
         Bundle args = new Bundle();
         ContactsListFragment fragment = new ContactsListFragment();
         args.putInt("type",type);
         fragment.setArguments(args);
         return fragment;
-    }
+    }*/
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         list=new ArrayList<>();
-        cAdapter=new ContactsAdapter(getActivity(),list);
+        cAdapter=new ContactsAdapter(getActivity(),list,this);
 
     }
 
@@ -74,17 +77,24 @@ public class ContactsListFragment extends Fragment {
 
     private void setUpList(View view) {
         recyclerView= (RecyclerView) view.findViewById(R.id.recycler_view);
-        type= getArguments().getInt("type");
+      //  type= getArguments().getInt("type");
 
+        list.addAll(RealmManager.getAllStoredContacts().findAll());
         Log.d(TAG, "setUpList: cadapter");
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(cAdapter);
-
     }
 
 
+    @Override
+    public void onItemClick(int position) {
+        startActivity(new Intent(getContext(),ChatActivity.class)
+                .putExtra(Constants.MAC_ADDRESS,list.get(position).macAddress)
+                .putExtra(Constants.NAME,list.get(position).name)
+        );
+    }
 
 }
