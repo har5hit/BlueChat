@@ -14,9 +14,10 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 
+import model.ChatStatusEvent;
 import model.SocketEvent;
 
-public class ConnectThread extends Thread {
+public class ConnectThread extends Thread implements IConnectionThread {
     private static final String TAG = "ConnectThread";
     private final BluetoothSocket mmSocket;
     private final BluetoothDevice mmDevice;
@@ -44,14 +45,13 @@ public class ConnectThread extends Thread {
         try {
             // Connect to the remote device through the socket. This call blocks
             // until it succeeds or throws an exception.
+            EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTING));
             mmSocket.connect();
         } catch (IOException connectException) {
             // Unable to connect; close the socket and return.
-            try {
-                mmSocket.close();
-            } catch (IOException closeException) {
-                Log.e(TAG, "Could not close the client socket", closeException);
-            }
+            EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTING_FAILED));
+            cancel();
+
             return;
         }
 
@@ -62,6 +62,7 @@ public class ConnectThread extends Thread {
 
     private void manageMyConnectedSocket(BluetoothSocket mmSocket) {
         EventBus.getDefault().post(new SocketEvent(mmSocket));
+        EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTED));
     }
 
     // Closes the client socket and causes the thread to finish.

@@ -6,9 +6,15 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.justadeveloper96.bluechat.Constants;
+
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import model.ChatStatusEvent;
 
 /**
  * Created by harshith on 24/7/17.
@@ -17,12 +23,13 @@ import java.io.OutputStream;
 public class BluetoothService {
     private static final String TAG = "MY_APP_DEBUG_TAG";
     private Handler mHandler;
+    ConnectedThread connectedThread;
 
     // handler that gets info from Bluetooth service
 
     // Defines several constants used when transmitting messages between the
     // service and the UI.
-    private interface MessageConstants {
+    public interface MessageConstants {
         public static final int MESSAGE_READ = 0;
         public static final int MESSAGE_WRITE = 1;
         public static final int MESSAGE_TOAST = 2;
@@ -30,7 +37,24 @@ public class BluetoothService {
         // ... (Add other message types here as needed.)
     }
 
-    private class ConnectedThread extends Thread {
+
+    public BluetoothService(BluetoothSocket socket,Handler mHandler) {
+        this.mHandler = mHandler;
+        connectedThread=new ConnectedThread(socket);
+        connectedThread.start();
+    }
+
+    public void write(String msg)
+    {
+        connectedThread.write(msg.getBytes());
+    }
+
+    public void close(){
+        connectedThread.cancel();
+        mHandler=null;
+    }
+
+    private class ConnectedThread extends Thread implements IConnectionThread {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
@@ -40,7 +64,6 @@ public class BluetoothService {
             mmSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
-
             // Get the input and output streams; using temp objects because
             // member streams are final.
             try {
@@ -71,8 +94,16 @@ public class BluetoothService {
                     Message readMsg = mHandler.obtainMessage(
                             MessageConstants.MESSAGE_READ, numBytes, -1,
                             mmBuffer);
+
+                    Log.d(TAG, "run: readMsg is"+ new String(mmBuffer,0,numBytes));
+
+                    //mmBuffer=new byte[1024];
+
                     readMsg.sendToTarget();
                 } catch (IOException e) {
+
+                    EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_DISCONNECTED));
+
                     Log.d(TAG, "Input stream was disconnected", e);
                     break;
                 }
@@ -86,8 +117,9 @@ public class BluetoothService {
 
                 // Share the sent message with the UI activity.
                 Message writtenMsg = mHandler.obtainMessage(
-                        MessageConstants.MESSAGE_WRITE, -1, -1, mmBuffer);
+                        MessageConstants.MESSAGE_WRITE, -1, -1,bytes);
                 writtenMsg.sendToTarget();
+                Log.d(TAG, "write: writenmsg is"+writtenMsg.toString());
             } catch (IOException e) {
                 Log.e(TAG, "Error occurred when sending data", e);
 
@@ -106,6 +138,7 @@ public class BluetoothService {
         public void cancel() {
             try {
                 mmSocket.close();
+                interrupt();
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the connect socket", e);
             }

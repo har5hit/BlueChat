@@ -15,56 +15,95 @@ import model.Message;
  * Created by harshith on 24/7/17.
  */
 
-public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> {
+public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     Context ctx;
-    List<Message> list;
+    List<Object> list;
+    String message;
+
 
     private static final int SELF = 531;
     private static final int OTHER = 997;
+    private static final int STATUS_MESSAGE = 456;
     private static String MY_MAC;
 
-    public ChatAdapter(Context ctx, List<Message> list,String my_mac) {
+    public ChatAdapter(Context ctx, List<Object> list, String my_mac) {
         this.ctx = ctx;
         this.list = list;
         MY_MAC = my_mac;
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v;
-        if (viewType== SELF)
+
+        if (viewType==STATUS_MESSAGE)
         {
-            v= LayoutInflater.from(ctx).inflate(R.layout.chat_thread_self,parent,false);
+            return new StatusHolder(LayoutInflater.from(ctx).inflate(R.layout.chat_thread_status, parent, false));
+        }
+        if (viewType == SELF) {
+            v = LayoutInflater.from(ctx).inflate(R.layout.chat_thread_self, parent, false);
+        } else {
+            v = LayoutInflater.from(ctx).inflate(R.layout.chat_thread_other, parent, false);
+        }
+        return new MessageHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof MessageHolder) {
+            message = ((Message) list.get(position)).message;
         }else
         {
-            v= LayoutInflater.from(ctx).inflate(R.layout.chat_thread_other,parent,false);
+            message= (String) list.get(position);
         }
 
-        return new MyViewHolder(v);
+        ((TextHolder)holder).setText(message);
     }
 
-    @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        holder.text.setText(list.get(position).message);
-    }
 
     @Override
-    public int getItemCount() {
+    public int getItemCount () {
         return list.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+    public class MessageHolder extends RecyclerView.ViewHolder implements TextHolder {
         TextView text;
-        public MyViewHolder(View itemView) {
+
+        public MessageHolder(View itemView) {
             super(itemView);
-            text= (TextView) itemView.findViewById(R.id.text);
+            text = (TextView) itemView.findViewById(R.id.text);
+        }
+
+        @Override
+        public void setText(String s) {
+            text.setText(s);
         }
     }
 
+    public class StatusHolder extends RecyclerView.ViewHolder implements TextHolder {
+        TextView text;
+
+        public StatusHolder(View itemView) {
+            super(itemView);
+            text = (TextView) itemView.findViewById(R.id.text);
+        }
+
+        @Override
+        public void setText(String s) {
+            text.setText(s);
+        }
+    }
+
+    public interface TextHolder {
+        void setText(String s);
+    }
+
     @Override
-    public int getItemViewType(int position) {
-        if (list.get(position).user_mac.equals(MY_MAC))
-        {
+    public int getItemViewType ( int position){
+        if (list.get(position) instanceof String) {
+            return STATUS_MESSAGE;
+        }
+        if (((Message) list.get(position)).user_mac.equals(MY_MAC)) {
             return SELF;
         }
         return OTHER;

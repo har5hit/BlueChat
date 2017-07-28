@@ -11,13 +11,14 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 
+import model.ChatStatusEvent;
 import model.SocketEvent;
 
 /**
  * Created by harshith on 24/7/17.
  */
 
-public class AcceptThread extends Thread {
+public class AcceptThread extends Thread implements IConnectionThread {
     private final BluetoothServerSocket mmServerSocket;
     private static final String TAG = "AcceptThread";
     public AcceptThread() {
@@ -36,12 +37,15 @@ public class AcceptThread extends Thread {
 
     public void run() {
         BluetoothSocket socket = null;
+        EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_LISTENING));
         // Keep listening until exception occurs or a socket is returned.
         while (true) {
             try {
                 socket = mmServerSocket.accept();
             } catch (IOException e) {
                 Log.e(TAG, "Socket's accept() method failed", e);
+                EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_LISTENING_FAILED));
+                cancel();
                 break;
             }
 
@@ -49,12 +53,8 @@ public class AcceptThread extends Thread {
                 // A connection was accepted. Perform work associated with
                 // the connection in a separate thread.
                 manageMyConnectedSocket(socket);
-                try {
-                    mmServerSocket.close();
-                }catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+
+                cancel();
                 break;
             }
         }
@@ -62,6 +62,7 @@ public class AcceptThread extends Thread {
 
     private void manageMyConnectedSocket(BluetoothSocket socket) {
         EventBus.getDefault().post(new SocketEvent(socket));
+        EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTED));
     }
 
     // Closes the connect socket and causes the thread to finish.

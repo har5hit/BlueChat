@@ -2,42 +2,57 @@ package com.justadeveloper96.bluechat;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import helpers.RealmManager;
 import helpers.Utils;
 import helpers.bluetooth.AcceptThread;
 import helpers.bluetooth.BlueHelper;
+import helpers.bluetooth.BluetoothService;
 import helpers.bluetooth.ConnectThread;
+import helpers.bluetooth.IConnectionThread;
 import io.realm.Realm;
 import io.realm.Sort;
+import model.ChatStatusEvent;
 import model.Message;
 import model.SocketEvent;
 import model.User;
 
-public class ChatActivity extends BlueActivity {
+public class ChatActivity extends BlueActivity implements View.OnClickListener, View.OnLayoutChangeListener,Handler.Callback {
 
     private RecyclerView rv;
     private ChatAdapter cAdapter;
-    private List<Message> list;
+    private List<Object> list;
+    BluetoothService connection;
+
+    private Button send;
+
+    private static final int MODE_ACCEPT = 813;
+    private static final int MODE_CONNECT = 875;
 
     private EditText message;
 
     private static final String TAG = "ChatActivity";
 
     User user;
+
+    MenuItem btn_connect;
 
     private String macAddress_my;
     private String macAddress_other;
@@ -48,33 +63,30 @@ public class ChatActivity extends BlueActivity {
     private boolean FIRST_USER=false;
 
     Thread thread;
+    Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        rv= (RecyclerView) findViewById(R.id.recyclerView);
-        message= (EditText) findViewById(R.id.ed_msg);
-        macAddress_other =getIntent().getStringExtra(Constants.MAC_ADDRESS);
-        name_other=getIntent().getStringExtra(Constants.NAME);
 
-        device_other=BlueHelper.getBluetoothAdapter().getRemoteDevice(macAddress_other);
+        init();
 
+        setUpListeners();
 
-        try {
-            Log.d(TAG, "onCreate: device connecting");
-            device_other.createRfcommSocketToServiceRecord(Constants.uuid);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        getUserAndMessages();
 
+    }
 
-        getSupportActionBar().setTitle(name_other);
+    private void setUpListeners() {
 
-        macAddress_my= BlueHelper.getBluetoothAdapter().getAddress();
+        send.setOnClickListener(this);
+        rv.addOnLayoutChangeListener(this);
 
+    }
+
+    private void getUserAndMessages() {
         user=RealmManager.getAllStoredContacts().equalTo("macAddress",macAddress_other).findFirst();
-        list=new ArrayList<>();
 
         if (user==null)
         {
@@ -97,31 +109,48 @@ public class ChatActivity extends BlueActivity {
                 }
             });
             FIRST_USER=true;
-            Log.d(TAG, "onCreate: new user created"+user.toString());
         }else {
             list.addAll(RealmManager.getRealm().where(Message.class).equalTo("id",user.message_id).findAllSorted("timestamp", Sort.DESCENDING));
-            Log.d(TAG, "onCreate: Existing messages"+list.toString());
         }
 
-        cAdapter=new ChatAdapter(this,list,macAddress_my);
+    }
+
+    private void init() {
+
+        rv= (RecyclerView) findViewById(R.id.recyclerView);
+        message= (EditText) findViewById(R.id.ed_msg);
+        send= (Button) findViewById(R.id.btn_send);
+
+        list=new ArrayList<>();
 
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setStackFromEnd(true);
         manager.setReverseLayout(true);
         rv.setLayoutManager(manager);
+
+        mHandler=new Handler(this);
+
+
+        name_other=getIntent().getStringExtra(Constants.NAME);
+        macAddress_my= BlueHelper.getBluetoothAdapter().getAddress();
+        macAddress_other =getIntent().getStringExtra(Constants.MAC_ADDRESS);
+
+
+        device_other=BlueHelper.getBluetoothAdapter().getRemoteDevice(macAddress_other);
+
+       /* try {
+            Log.d(TAG, "onCreate: device connecting");
+            device_other.createRfcommSocketToServiceRecord(Constants.uuid);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+
+        getSupportActionBar().setTitle(name_other);
+
+        cAdapter=new ChatAdapter(this,list,macAddress_my);
+
         rv.setAdapter(cAdapter);
 
-    }
-
-    public void sendMessage(View v)
-    {
-        list.add(0,new Message
-                (Utils.getText(message),
-                        macAddress_my,
-                        System.currentTimeMillis(),
-                        user.message_id)
-        );
-        cAdapter.notifyItemInserted(0);
     }
 
 
@@ -131,150 +160,162 @@ public class ChatActivity extends BlueActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (item.getItemId()==R.id.action_accept)
-        {
-            thread=new AcceptThread();
-        }
-
         if (item.getItemId()==R.id.action_connect)
         {
-            thread=new ConnectThread(device_other);
+            this.btn_connect=item;
+            btn_connect.setEnabled(false);
+            startThread(MODE_CONNECT);
         }
 
-        thread.start();
         return super.onOptionsItemSelected(item);
     }
 
-    @Subscribe
+    private void startThread(int threadMode) {
+        if (threadMode==MODE_ACCEPT)
+        {
+            thread=new AcceptThread();
+
+        }else
+        {
+            thread=new ConnectThread(device_other);
+        }
+        thread.start();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSocketReceived(SocketEvent socketEvent)
     {
-        Log.d(TAG, "onSocketReceived: socket received"+socketEvent.socket.toString());
+        send.setEnabled(true);
+
+        if (connection==null) {
+            connection = new BluetoothService(socketEvent.socket, mHandler);
+        }
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onStatusEvent(ChatStatusEvent statusEvent)
+    {
+        Log.d(TAG, "onStatusEvent: "+Constants.ERROR_MSG[statusEvent.status]);
+        list.add(0,Constants.ERROR_MSG[statusEvent.status]);
+        cAdapter.notifyDataSetChanged();
+
+        if (statusEvent.status==Constants.STATUS_CONNECTING_FAILED)
+        {
+            ((IConnectionThread)thread).cancel();
+            startThread(MODE_ACCEPT);
+        }
+
+        if (statusEvent.status==Constants.STATUS_DISCONNECTED)
+        {
+            btn_connect.setEnabled(true);
+            send.setEnabled(false);
+        }
+
+        scrollToBottom();
+    }
+
+    private void scrollToBottom() {
+        rv.smoothScrollToPosition(0);
+    }
+
+    private void storeMessage(android.os.Message msg) {
+
+        if (msg.what== BluetoothService.MessageConstants.MESSAGE_TOAST)
+        {
+            Utils.showToast(this,msg.getData().getString("toast"));
+            return;
+        }
+        String data;
+
+        String who;
+        if (msg.what== BluetoothService.MessageConstants.MESSAGE_READ)
+        {
+            data = new String(((byte[]) msg.obj),0,msg.arg1);
+            who=macAddress_other;
+        }else
+        {
+            data = new String((byte[]) msg.obj);
+            who=macAddress_my;
+        }
+
+
+        list.add(0,new Message(data,who,System.currentTimeMillis(),user.message_id));
+        cAdapter.notifyItemInserted(0);
+        rv.smoothScrollToPosition(0);
     }
 
     @Override
     protected void onPause() {
+        saveData();
+        super.onPause();
+    }
 
+    private void saveData() {
         if (FIRST_USER && list.size()>0)
         {
             RealmManager.saveData(user);
         }
-        RealmManager.saveData(list);
-        super.onPause();
+        List<Message> finalList=new LinkedList<>();
+
+        for (Object m:list)
+        {
+            if (m instanceof Message )
+            {
+                finalList.add((Message) m);
+            }
+        }
+
+        RealmManager.saveData(finalList);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+        BlueHelper.isInChat=true;
+
+    }
+
+    @Override
+    protected void onStop() {
+        BlueHelper.isInChat=false;
+        EventBus.getDefault().unregister(this);
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        thread.interrupt();
+        try{
+            ((IConnectionThread)thread).cancel();
+            if (connection!=null)
+            {
+                connection.close();
+            }}
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
         super.onDestroy();
     }
-    /*
-    class ConnectThread extends AsyncTask<BluetoothDevice,Void,BluetoothSocket>
-    {
 
-        private static final String TAG = "ConnectThread";
-        private  BluetoothSocket mmSocket;
-        private  BluetoothDevice mmDevice;
-
-
-        @Override
-        protected void onCancelled() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Could not close the client socket", e);
-            }
-            super.onCancelled();
-
-        }
-
-        @Override
-        protected BluetoothSocket doInBackground(BluetoothDevice... params) {
-            try {
-                mmSocket = params[0].createRfcommSocketToServiceRecord(Constants.uuid);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-            try {
-                // Connect to the remote device through the socket. This call blocks
-                // until it succeeds or throws an exception.
-                mmSocket.connect();
-            } catch (IOException connectException) {
-                // Unable to connect; close the socket and return.
-                try {
-                    mmSocket.close();
-                } catch (IOException closeException) {
-                    Log.e(TAG, "Could not close the client socket", closeException);
-                }
-            }
-            return mmSocket;
-        }
-
-
-        @Override
-        protected void onPostExecute(BluetoothSocket bluetoothSocket) {
-            super.onPostExecute(bluetoothSocket);
-        }
-
+    @Override
+    public void onClick(View v) {
+        connection.write(Utils.getText(message));
     }
 
-    class AcceptThread extends AsyncTask<BluetoothDevice,Void,BluetoothSocket>{
-        private BluetoothServerSocket mmServerSocket;
+    @Override
+    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+        scrollToBottom();
+    }
 
-        @Override
-        protected void onCancelled() {
-            try {
-                mmServerSocket.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Could not close the connect socket", e);
-            }
-
-            super.onCancelled();
-        }
-
-        @Override
-        protected BluetoothSocket doInBackground(BluetoothDevice... params) {
-            try {
-                mmServerSocket=BluetoothAdapter.getDefaultAdapter()
-                        .listenUsingRfcommWithServiceRecord(Constants.app_name,Constants.uuid);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            BluetoothSocket socket = null;
-            // Keep listening until exception occurs or a socket is returned.
-            while (true) {
-                try {
-                    socket = mmServerSocket.accept();
-                } catch (IOException e) {
-                    Log.e(TAG, "Socket's accept() method failed", e);
-                    break;
-                }
-
-                if (socket != null) {
-                    // A connection was accepted. Perform work associated with
-                    // the connection in a separate thread.
-                    try {
-                        mmServerSocket.close();
-                    }catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-
-                    break;
-                }
-            }
-
-            return socket;
-        }
-
-        @Override
-        protected void onPostExecute(BluetoothSocket bluetoothSocket) {
-            super.onPostExecute(bluetoothSocket);
-        }
-    }*/
+    @Override
+    public boolean handleMessage(android.os.Message msg) {
+        storeMessage(msg);
+        return true;
+    }
 }
