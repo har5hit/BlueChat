@@ -19,8 +19,6 @@ public class BlueHelper {
 
     public static long counter=0;
 
-    public static boolean isInChat=false;
-
     BlueHelper() {
     }
 
@@ -37,10 +35,6 @@ public class BlueHelper {
     }
 
     public static void setDiscoverable(Context ctx){
-        if (isInChat)
-        {
-            return;
-        }
 
         if (counter==0 || ((System.currentTimeMillis()/1000)-counter)>300) {
             Intent discoverableIntent =

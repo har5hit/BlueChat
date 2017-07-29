@@ -1,6 +1,7 @@
 package com.justadeveloper96.bluechat;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,7 @@ import java.util.List;
 import model.User;
 
 /**
- * Created by sankalp on 20/7/17.
+ * Created by Harshith on 20/7/17.
  */
 
 public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyViewVolder> {
@@ -38,7 +39,11 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
     public void onBindViewHolder(MyViewVolder holder, int position) {
         User user=list.get(position);
         holder.name.setText(user.name);
-        holder.device_name.setText(user.last_message);
+        holder.last_message.setText(user.last_message);
+        if (user.last_msg_time>user.last_read_time)
+        {
+            holder.last_message.setTypeface(null, Typeface.BOLD_ITALIC);
+        }
     }
 
     @Override
@@ -48,12 +53,12 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
 
     public class MyViewVolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        TextView name,device_name;
+        TextView name, last_message;
 
         public MyViewVolder(View itemView) {
             super(itemView);
             name= (TextView) itemView.findViewById(android.R.id.text1);
-            device_name= (TextView) itemView.findViewById(android.R.id.text2);
+            last_message = (TextView) itemView.findViewById(android.R.id.text2);
             itemView.setOnClickListener(this);
         }
 

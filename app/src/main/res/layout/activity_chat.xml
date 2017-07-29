@@ -15,11 +15,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/xml_border_black"
-            android:layout_marginBottom="4dp"
             android:id="@+id/rl_send"
             android:layout_alignParentBottom="true"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="4dp"
             android:padding="6dp">
 
             <ImageButton

@@ -17,7 +17,7 @@ import java.io.IOException;
 import model.ChatStatusEvent;
 import model.SocketEvent;
 
-public class ConnectThread extends Thread implements IConnectionThread {
+public class ConnectThread extends Thread {
     private static final String TAG = "ConnectThread";
     private final BluetoothSocket mmSocket;
     private final BluetoothDevice mmDevice;
@@ -62,7 +62,7 @@ public class ConnectThread extends Thread implements IConnectionThread {
 
     private void manageMyConnectedSocket(BluetoothSocket mmSocket) {
         EventBus.getDefault().post(new SocketEvent(mmSocket));
-        EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTED));
+        EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_CONNECTED));
     }
 
     // Closes the client socket and causes the thread to finish.

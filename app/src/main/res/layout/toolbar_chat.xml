@@ -16,10 +16,12 @@
 
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Base.TextAppearance.AppCompat.Title"
+            style="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Title"
             android:text="Name"
+            android:drawableRight="@android:drawable/presence_invisible"
+            android:drawablePadding="12dp"
             android:id="@+id/tv_name"/>
 
         <TextView
@@ -27,6 +29,7 @@
             android:layout_height="wrap_content"
             style="@style/Base.TextAppearance.AppCompat.Body1"
             android:id="@+id/tv_status"
+            android:textStyle="italic"
             android:visibility="gone"/>
     </LinearLayout>
 

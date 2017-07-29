@@ -18,7 +18,7 @@ import model.SocketEvent;
  * Created by harshith on 24/7/17.
  */
 
-public class AcceptThread extends Thread implements IConnectionThread {
+public class AcceptThread extends Thread {
     private final BluetoothServerSocket mmServerSocket;
     private static final String TAG = "AcceptThread";
     public AcceptThread() {
@@ -44,7 +44,7 @@ public class AcceptThread extends Thread implements IConnectionThread {
                 socket = mmServerSocket.accept();
             } catch (IOException e) {
                 Log.e(TAG, "Socket's accept() method failed", e);
-                EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_LISTENING_FAILED));
+                EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_DISCONNECTED));
                 cancel();
                 break;
             }
@@ -62,7 +62,7 @@ public class AcceptThread extends Thread implements IConnectionThread {
 
     private void manageMyConnectedSocket(BluetoothSocket socket) {
         EventBus.getDefault().post(new SocketEvent(socket));
-        EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTED));
+        EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_CONNECTED));
     }
 
     // Closes the connect socket and causes the thread to finish.

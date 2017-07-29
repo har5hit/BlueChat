@@ -94,6 +94,7 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
 
                if (!devices.contains(device)) {
                    devices.add(device);
+                   states.add(true);
                    sAdapter.notifyItemInserted(devices.size() - 1);
                }else {
                    int index=devices.indexOf(device);

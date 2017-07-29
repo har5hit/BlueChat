@@ -466,6 +466,13 @@ public class Utils {
         return dp;
     }
 
+    public static float convertDpToPixel(float dp){
+        Resources resources = getContext().getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        float px = dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return px;
+    }
+
 
 
     public static AlertDialog openSettingAlert(String title, String msg, final AppCompatActivity app)
@@ -499,6 +506,7 @@ public class Utils {
     {
         if(ctx!=null&&!msg.isEmpty())
         {
+
             Toast.makeText(ctx,msg,Toast.LENGTH_SHORT).show();
         }
 

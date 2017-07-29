@@ -38,6 +38,6 @@ public class Constants {
     @IntDef({STATUS_CONNECTING,STATUS_CONNECTED,STATUS_CONNECTING_FAILED,STATUS_LISTENING,STATUS_LISTENING_FAILED,STATUS_DISCONNECTED,STATUS_TYPING})
     public @interface ChatStatusConstants{}
 
-    public static String[] ERROR_MSG={"CONNECTING...","CONNECTED","CONNECTION FAILED","LISTENING","LISTENING FAILED","DISCONNECTED","Typing..."};
+    public static String[] ERROR_MSG={"Connecting...","Connected","Connection failed","Listening","Listening failed","Disconnected","Typing..."};
 
 }

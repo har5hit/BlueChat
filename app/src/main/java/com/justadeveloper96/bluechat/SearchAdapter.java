@@ -42,7 +42,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
             state= android.R.drawable.presence_online;
         }else
         {
-            state= android.R.drawable.presence_offline;
+            state= android.R.drawable.presence_invisible;
         }
         holder.text.setCompoundDrawablesWithIntrinsicBounds(0, 0, state,0);
 
