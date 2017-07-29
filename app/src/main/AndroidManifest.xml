@@ -4,8 +4,8 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name="helpers.MyApplication"
@@ -28,7 +28,7 @@
         <activity android:name=".SearchActivity" />
         <activity android:name=".BlueActivity" />
         <activity android:name=".ProfileActivity" />
-        <activity android:name=".ChatActivity"></activity>
+        <activity android:name=".ChatActivity" android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

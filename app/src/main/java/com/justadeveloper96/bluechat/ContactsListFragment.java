@@ -35,21 +35,8 @@ public class ContactsListFragment extends Fragment implements ItemClickListener 
         return list;
     }
 
-    public ContactsAdapter getAdapter() {
-        return cAdapter;
-    }
-
     public ContactsListFragment() {
     }
-
-   /* public static ContactsListFragment newInstance(int type) {
-
-        Bundle args = new Bundle();
-        ContactsListFragment fragment = new ContactsListFragment();
-        args.putInt("type",type);
-        fragment.setArguments(args);
-        return fragment;
-    }*/
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -97,4 +84,11 @@ public class ContactsListFragment extends Fragment implements ItemClickListener 
         );
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        list.clear();
+        list.addAll(RealmManager.getAllStoredContacts().findAll());
+        cAdapter.notifyDataSetChanged();
+    }
 }

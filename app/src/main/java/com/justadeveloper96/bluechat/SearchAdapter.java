@@ -1,6 +1,8 @@
 package com.justadeveloper96.bluechat;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
+import android.support.annotation.DrawableRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,12 +16,18 @@ import java.util.List;
  */
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHolder> {
-    List<BluetoothDevice> list;
-    ItemClickListener listener;
+    private final Context context;
+    List<Boolean> states;
+    List<BluetoothDevice> devices;
+    private final ItemClickListener listener;
 
-    public SearchAdapter(List<BluetoothDevice> list, ItemClickListener listener) {
-        this.list = list;
+    @DrawableRes int state;
+
+    public SearchAdapter(List<BluetoothDevice> devices, List<Boolean> states, ItemClickListener listener, Context context) {
+        this.devices = devices;
         this.listener = listener;
+        this.states=states;
+        this.context=context;
     }
 
     @Override
@@ -29,12 +37,20 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
 
     @Override
     public void onBindViewHolder(SearchAdapter.MyViewHolder holder, int position) {
-        holder.text.setText(list.get(position).getName());
+        holder.text.setText(devices.get(position).getName());
+        if (states.get(position)) {
+            state= android.R.drawable.presence_online;
+        }else
+        {
+            state= android.R.drawable.presence_offline;
+        }
+        holder.text.setCompoundDrawablesWithIntrinsicBounds(0, 0, state,0);
+
     }
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return devices.size();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

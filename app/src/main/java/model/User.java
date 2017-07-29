@@ -25,6 +25,8 @@ public class User extends RealmObject{
     @PrimaryKey
     public String macAddress;
 
+    public String last_message;
+
     @Override
     public String toString() {
         return "User{" +
@@ -33,6 +35,7 @@ public class User extends RealmObject{
                 ", device_name='" + device_name + '\'' +
                 ", message_id=" + message_id +
                 ", macAddress='" + macAddress + '\'' +
+                ", last_message='" + last_message + '\'' +
                 '}';
     }
 }

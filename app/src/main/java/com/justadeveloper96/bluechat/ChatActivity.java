@@ -3,14 +3,17 @@ package com.justadeveloper96.bluechat;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.transition.TransitionManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -37,22 +40,25 @@ import model.User;
 public class ChatActivity extends BlueActivity implements View.OnClickListener, View.OnLayoutChangeListener,Handler.Callback {
 
     private RecyclerView rv;
+    private EditText message;
+    private TextView status;
+    private ImageButton send;
+    private MenuItem btn_connect;
+    private Toolbar toolbar;
+
     private ChatAdapter cAdapter;
     private List<Object> list;
     BluetoothService connection;
 
-    private Button send;
 
     private static final int MODE_ACCEPT = 813;
     private static final int MODE_CONNECT = 875;
 
-    private EditText message;
 
     private static final String TAG = "ChatActivity";
 
     User user;
 
-    MenuItem btn_connect;
 
     private String macAddress_my;
     private String macAddress_other;
@@ -64,6 +70,8 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
     Thread thread;
     Handler mHandler;
+
+    private boolean isConnected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +127,11 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
         rv= (RecyclerView) findViewById(R.id.recyclerView);
         message= (EditText) findViewById(R.id.ed_msg);
-        send= (Button) findViewById(R.id.btn_send);
+        send= (ImageButton) findViewById(R.id.btn_send);
+
+        toolbar= (Toolbar) findViewById(R.id.toolbar);
+        status= (TextView) toolbar.findViewById(R.id.tv_status);
+        setSupportActionBar(toolbar);
 
         list=new ArrayList<>();
 
@@ -138,14 +150,9 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
         device_other=BlueHelper.getBluetoothAdapter().getRemoteDevice(macAddress_other);
 
-       /* try {
-            Log.d(TAG, "onCreate: device connecting");
-            device_other.createRfcommSocketToServiceRecord(Constants.uuid);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+        ((TextView)toolbar.findViewById(R.id.tv_name)).setText(name_other);
 
-        getSupportActionBar().setTitle(name_other);
+        //getSupportActionBar().setTitle(name_other);
 
         cAdapter=new ChatAdapter(this,list,macAddress_my);
 
@@ -157,6 +164,7 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_chat,menu);
+        btn_connect=menu.findItem(R.id.action_connect);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -166,7 +174,7 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
         if (item.getItemId()==R.id.action_connect)
         {
-            this.btn_connect=item;
+            //this.btn_connect=item;
             btn_connect.setEnabled(false);
             startThread(MODE_CONNECT);
         }
@@ -190,9 +198,9 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     public void onSocketReceived(SocketEvent socketEvent)
     {
         send.setEnabled(true);
-
+        isConnected=true;
         if (connection==null) {
-            connection = new BluetoothService(socketEvent.socket, mHandler);
+            connection = new BluetoothService(socketEvent.socket, mHandler,macAddress_other);
         }
     }
 
@@ -201,8 +209,14 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     public void onStatusEvent(ChatStatusEvent statusEvent)
     {
         Log.d(TAG, "onStatusEvent: "+Constants.ERROR_MSG[statusEvent.status]);
-        list.add(0,Constants.ERROR_MSG[statusEvent.status]);
-        cAdapter.notifyDataSetChanged();
+
+        if (status.getText().length()==0) {
+            TransitionManager.beginDelayedTransition(toolbar);
+            status.setVisibility(View.VISIBLE);
+        }
+
+
+        status.setText(Constants.ERROR_MSG[statusEvent.status]);
 
         if (statusEvent.status==Constants.STATUS_CONNECTING_FAILED)
         {
@@ -214,7 +228,11 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
         {
             btn_connect.setEnabled(true);
             send.setEnabled(false);
+            isConnected=false;
+            Utils.showToast(this,name_other+" Disconnected");
         }
+
+
 
         scrollToBottom();
     }
@@ -227,7 +245,7 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
         if (msg.what== BluetoothService.MessageConstants.MESSAGE_TOAST)
         {
-            Utils.showToast(this,msg.getData().getString("toast"));
+            //Utils.showToast(this,msg.getData().getString("toast"));
             return;
         }
         String data;
@@ -256,10 +274,14 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     }
 
     private void saveData() {
-        if (FIRST_USER && list.size()>0)
+        if (list.size()>0)
         {
+            RealmManager.getRealm().beginTransaction();
+            user.last_message=((Message)list.get(0)).message;
+            RealmManager.getRealm().commitTransaction();
             RealmManager.saveData(user);
         }
+
         List<Message> finalList=new LinkedList<>();
 
         for (Object m:list)
@@ -278,7 +300,6 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
         super.onStart();
         EventBus.getDefault().register(this);
         BlueHelper.isInChat=true;
-
     }
 
     @Override
@@ -295,7 +316,8 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
             if (connection!=null)
             {
                 connection.close();
-            }}
+            }
+        }
         catch (Exception e)
         {
             e.printStackTrace();
@@ -305,6 +327,16 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
     @Override
     public void onClick(View v) {
+
+        if(!isConnected)
+        {
+            Utils.showToast(this,"Not Connected to "+name_other);
+            return;
+        }
+        if (Utils.getText(message).isEmpty())
+        {
+            return;
+        }
         connection.write(Utils.getText(message));
     }
 

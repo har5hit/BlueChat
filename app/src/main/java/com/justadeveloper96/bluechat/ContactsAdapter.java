@@ -38,6 +38,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
     public void onBindViewHolder(MyViewVolder holder, int position) {
         User user=list.get(position);
         holder.name.setText(user.name);
+        holder.device_name.setText(user.last_message);
     }
 
     @Override

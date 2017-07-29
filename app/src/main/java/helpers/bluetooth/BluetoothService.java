@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import helpers.Utils;
 import model.ChatStatusEvent;
 
 /**
@@ -24,7 +25,8 @@ public class BluetoothService {
     private static final String TAG = "MY_APP_DEBUG_TAG";
     private Handler mHandler;
     ConnectedThread connectedThread;
-
+    private String latest_macAdress="";
+    private static BluetoothService INSTANCE;
     // handler that gets info from Bluetooth service
 
     // Defines several constants used when transmitting messages between the
@@ -38,20 +40,39 @@ public class BluetoothService {
     }
 
 
-    public BluetoothService(BluetoothSocket socket,Handler mHandler) {
+    public BluetoothService(BluetoothSocket socket,Handler mHandler,String macAddress) {
         this.mHandler = mHandler;
+        this.latest_macAdress=macAddress;
         connectedThread=new ConnectedThread(socket);
         connectedThread.start();
     }
 
     public void write(String msg)
     {
-        connectedThread.write(msg.getBytes());
+        connectedThread.write(msg);
     }
 
     public void close(){
         connectedThread.cancel();
         mHandler=null;
+        INSTANCE=null;
+    }
+
+    public BluetoothService getInstance(BluetoothSocket socket,Handler mHandler,String macAddress)
+    {
+        if (INSTANCE==null)
+        {
+            INSTANCE=new BluetoothService(socket,mHandler,macAddress);
+            return INSTANCE;
+        }
+
+        if (latest_macAdress.equals(macAddress))
+        {
+            return INSTANCE;
+        }else {
+            INSTANCE.close();
+            return getInstance(socket,mHandler,macAddress);
+        }
     }
 
     private class ConnectedThread extends Thread implements IConnectionThread {
@@ -91,6 +112,9 @@ public class BluetoothService {
                     // Read from the InputStream.
                     numBytes = mmInStream.read(mmBuffer);
                     // Send the obtained bytes to the UI activity.
+
+                    Utils.log("reading from buffer send to ui");
+
                     Message readMsg = mHandler.obtainMessage(
                             MessageConstants.MESSAGE_READ, numBytes, -1,
                             mmBuffer);
@@ -103,7 +127,7 @@ public class BluetoothService {
                 } catch (IOException e) {
 
                     EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_DISCONNECTED));
-
+                    cancel();
                     Log.d(TAG, "Input stream was disconnected", e);
                     break;
                 }
@@ -111,18 +135,18 @@ public class BluetoothService {
         }
 
         // Call this from the main activity to send data to the remote device.
-        public void write(byte[] bytes) {
+        public void write(String msg) {
             try {
-                mmOutStream.write(bytes);
-
+                mmOutStream.write(msg.getBytes());
                 // Share the sent message with the UI activity.
+
                 Message writtenMsg = mHandler.obtainMessage(
-                        MessageConstants.MESSAGE_WRITE, -1, -1,bytes);
+                        MessageConstants.MESSAGE_WRITE, -1, -1,msg.getBytes());
                 writtenMsg.sendToTarget();
                 Log.d(TAG, "write: writenmsg is"+writtenMsg.toString());
             } catch (IOException e) {
                 Log.e(TAG, "Error occurred when sending data", e);
-
+                EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_DISCONNECTED));
                 // Send a failure message back to the activity.
                 Message writeErrorMsg =
                         mHandler.obtainMessage(MessageConstants.MESSAGE_TOAST);
@@ -130,7 +154,9 @@ public class BluetoothService {
                 bundle.putString("toast",
                         "Couldn't send data to the other device");
                 writeErrorMsg.setData(bundle);
-                mHandler.sendMessage(writeErrorMsg);
+                writeErrorMsg.sendToTarget();
+                //mHandler.sendMessage(writeErrorMsg);
+                cancel();
             }
         }
 

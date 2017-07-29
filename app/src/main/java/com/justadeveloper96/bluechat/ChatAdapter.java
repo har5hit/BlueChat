@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import helpers.Utils;
 import model.Message;
 
 /**
@@ -18,8 +19,9 @@ import model.Message;
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     Context ctx;
     List<Object> list;
-    String message;
+    String string;
 
+    Message message;
 
     private static final int SELF = 531;
     private static final int OTHER = 997;
@@ -50,14 +52,15 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof MessageHolder) {
-            message = ((Message) list.get(position)).message;
+        if (holder instanceof StatusHolder) {
+            ((StatusHolder) holder).text.setText((String) list.get(position));
         }else
         {
-            message= (String) list.get(position);
+            message= (Message) list.get(position);
+            ((MessageHolder)holder).text.setText(message.message);
+            ((MessageHolder) holder).date.setText(Utils.getDateFromTimestamp(message.timestamp,"dd/MM HH:mm"));
         }
 
-        ((TextHolder)holder).setText(message);
     }
 
 
@@ -66,36 +69,23 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return list.size();
     }
 
-    public class MessageHolder extends RecyclerView.ViewHolder implements TextHolder {
-        TextView text;
+    public class MessageHolder extends RecyclerView.ViewHolder {
+        TextView text,date;
 
         public MessageHolder(View itemView) {
             super(itemView);
             text = (TextView) itemView.findViewById(R.id.text);
-        }
-
-        @Override
-        public void setText(String s) {
-            text.setText(s);
+            date = (TextView) itemView.findViewById(R.id.tv_date);
         }
     }
 
-    public class StatusHolder extends RecyclerView.ViewHolder implements TextHolder {
+    public class StatusHolder extends RecyclerView.ViewHolder {
         TextView text;
 
         public StatusHolder(View itemView) {
             super(itemView);
             text = (TextView) itemView.findViewById(R.id.text);
         }
-
-        @Override
-        public void setText(String s) {
-            text.setText(s);
-        }
-    }
-
-    public interface TextHolder {
-        void setText(String s);
     }
 
     @Override

@@ -24,6 +24,7 @@ public class MyApplication extends Application {
         }
     }
 
+
     public static Context getINSTANCE() {
         return INSTANCE;
     }
