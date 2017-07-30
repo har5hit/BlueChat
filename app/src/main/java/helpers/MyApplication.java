@@ -137,7 +137,7 @@ public class MyApplication extends Application {
         RealmManager.getRealm().commitTransaction();
 
 
-        RealmManager.saveData(new model.Message(data,me.macAddress,System.currentTimeMillis(),user.message_id));
+        RealmManager.saveData(new model.Message(data,me.macAddress,current_time,user.message_id));
         if (me.message.what== BluetoothService.MessageConstants.MESSAGE_READ)
         {
             showNotification(me.macAddress_other,me.user_name,data);
