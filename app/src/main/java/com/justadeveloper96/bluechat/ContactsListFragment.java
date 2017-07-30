@@ -16,8 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import helpers.RealmManager;
+import helpers.Utils;
 import model.User;
 
+/**
+ * Created by harshith on 24/7/17.
+ */
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -41,7 +45,6 @@ public class ContactsListFragment extends Fragment implements ItemClickListener 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         list=new ArrayList<>();
         cAdapter=new ContactsAdapter(getActivity(),list,this);
 
@@ -75,7 +78,6 @@ public class ContactsListFragment extends Fragment implements ItemClickListener 
         recyclerView.setAdapter(cAdapter);
     }
 
-
     @Override
     public void onItemClick(int position) {
         startActivity(new Intent(getContext(),ChatActivity.class)
@@ -90,5 +92,6 @@ public class ContactsListFragment extends Fragment implements ItemClickListener 
         list.clear();
         list.addAll(RealmManager.getAllStoredContacts().findAll());
         cAdapter.notifyDataSetChanged();
+        Utils.log("refreshed");
     }
 }

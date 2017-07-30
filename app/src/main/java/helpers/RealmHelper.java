@@ -4,10 +4,9 @@ import android.content.Context;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.realm.RealmQuery;
 
 /**
- * Created by sankalp on 17/4/17.
+ * Created by Harshith on 17/4/17.
  */
 
 public class RealmHelper {

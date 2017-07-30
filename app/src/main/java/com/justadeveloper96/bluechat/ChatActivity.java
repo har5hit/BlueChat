@@ -1,5 +1,6 @@
 package com.justadeveloper96.bluechat;
 
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.support.transition.TransitionManager;
@@ -34,6 +35,10 @@ import model.Message;
 import model.MessageEvent;
 import model.SocketEvent;
 import model.User;
+
+/**
+ * Created by Harshith on 20/7/17.
+ */
 
 public class ChatActivity extends BlueActivity implements View.OnClickListener, View.OnLayoutChangeListener{
 
@@ -144,7 +149,7 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
         if (item.getItemId()==R.id.action_connect) {
             if (isConnected) {
-                MyApplication.closeBluetoothService();
+                MyApplication.closeBluetoothService(macAddress_other);
                 connection=null;
             } else {
                 startThread(MODE_CONNECT);
@@ -179,17 +184,15 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
             who=macAddress_my;
         }
 
-        list.add(0,new Message(data,who,System.currentTimeMillis(),2439168));
+        list.add(0,new Message(data,who,System.currentTimeMillis(),0));
         cAdapter.notifyItemInserted(0);
     }
 
     private void startThread(int threadMode) {
 
-
-
         if (threadMode==MODE_ACCEPT)
         {
-            thread=new AcceptThread();
+            thread=new AcceptThread(macAddress_other);
 
         }else
         {
@@ -201,25 +204,31 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSocketReceived(SocketEvent socketEvent)
     {
-        isConnected=true;
-        if (connection==null) {
+//        if (connection==null) {
 
             Utils.log("requesting new bservice on socket received");
             connection = MyApplication.getBLUETOOTHSERVICE(socketEvent.socket,macAddress_other,name_other);
-        }
-    }
+        //}
 
+        onChatConnected();
+    }
 
     @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
     public void onStatusEvent(ChatStatusEvent statusEvent)
     {
-        Log.d(TAG, "onStatusEvent: "+Constants.ERROR_MSG[statusEvent.status]);
+        if (!statusEvent.macAddress.equals(macAddress_other)){
+            return;
+        }
 
         if (status.getText().length()==0) {
             TransitionManager.beginDelayedTransition(toolbar);
             status.setVisibility(View.VISIBLE);
         }
 
+        status.setText(Constants.ERROR_MSG[statusEvent.status]);
+
+
+        Log.d(TAG, "onStatusEvent: "+Constants.ERROR_MSG[statusEvent.status]);
 
         switch (statusEvent.status)
         {
@@ -228,28 +237,17 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
                 break;
             case Constants.STATUS_CONNECTED:
-                Utils.showToast(this,name_other+" "+Constants.ERROR_MSG[statusEvent.status]);
-                btn_connect.setEnabled(true);
-                btn_connect.setTitle(R.string.menu_disconnect);
-                title.setCompoundDrawablesWithIntrinsicBounds(0,0,android.R.drawable.presence_online,0);
+                //useless as when connected in chat screen, the connection will be done in onSocketReceived and is handled else it will be on at onResume.
+               onChatConnected();
 
                 break;
             case Constants.STATUS_DISCONNECTED:
-
-                if (connection==null)
-                {
-                    return;
-                }
-                connection=null;
-                btn_connect.setEnabled(true);
-                btn_connect.setTitle(R.string.menu_connect);
-                isConnected=false;
-                Utils.showToast(this,name_other+" "+Constants.ERROR_MSG[statusEvent.status]);
-                title.setCompoundDrawablesWithIntrinsicBounds(0,0,android.R.drawable.presence_offline,0);
+                onChatDisconnected();
                 break;
-        }
 
-        status.setText(Constants.ERROR_MSG[statusEvent.status]);
+            case Constants.STATUS_LISTENING_FAILED:
+                onChatDisconnected();
+        }
     }
 
     private void scrollToBottom() {
@@ -281,9 +279,35 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
         cAdapter.notifyItemInserted(0);
     }
 
+
+    public void onChatConnected()
+    {
+        isConnected=true;
+        if (status.getText().length()==0) {
+            TransitionManager.beginDelayedTransition(toolbar);
+            status.setVisibility(View.VISIBLE);
+        }
+        btn_connect.setTitle(R.string.menu_disconnect);
+        btn_connect.setEnabled(true);
+        Utils.showToast(this,name_other+" "+Constants.ERROR_MSG[Constants.STATUS_CONNECTED]);
+        status.setText(Constants.ERROR_MSG[Constants.STATUS_CONNECTED]);
+
+        title.setCompoundDrawablesWithIntrinsicBounds(0,0,android.R.drawable.presence_online,0);
+    }
+
+    public void onChatDisconnected()
+    {
+        connection=null;
+        isConnected=false;
+        btn_connect.setTitle(R.string.menu_connect);
+        btn_connect.setEnabled(true);
+        //Utils.showToast(this,name_other+" "+Constants.ERROR_MSG[Constants.STATUS_DISCONNECTED]);
+        title.setCompoundDrawablesWithIntrinsicBounds(0,0,android.R.drawable.presence_invisible,0);
+    }
     @Override
     protected void onPause() {
         EventBus.getDefault().unregister(this);
+        MyApplication.currentWindow="";
         saveData();
 
         try{
@@ -309,31 +333,34 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        MyApplication.currentWindow=macAddress_other;
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        MyApplication.currentWindow="";
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
+        MyApplication.currentWindow=macAddress_other;
+        EventBus.getDefault().register(this);
+
         list.clear();
 
         if (user!=null) {
             List<Message> temp = RealmManager.getRealm().copyFromRealm(
-                    RealmManager.getRealm().where(Message.class).equalTo("id", user.message_id).findAllSorted("timestamp", Sort.DESCENDING));
+                    RealmManager.getRealm().where(Message.class).equalTo("id", user.message_id).findAllSorted("timestamp", Sort.DESCENDING).subList(0,10));
 
             if (temp != null) {
                 list.addAll(temp);
                 cAdapter.notifyDataSetChanged();
-                scrollToBottom();
+                rv.scrollToPosition(0);
             }
+        }
+
+
+
+        try{
+            int notify_id=MyApplication.notify_id.get(macAddress_other);
+            NotificationManager manager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.cancel(notify_id);
+            MyApplication.notify_count.put(macAddress_other,0);
+        }catch (Exception e)
+        {
+            e.printStackTrace();
         }
 
         if (MyApplication.getBLUETOOTHSERVICE()!=null && MyApplication.getBLUETOOTHSERVICE().macAddress.equals(macAddress_other))
@@ -345,7 +372,6 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
             status.setText(Constants.ERROR_MSG[Constants.STATUS_CONNECTED]);
             isConnected=true;
         }
-        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -365,10 +391,6 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        if (rv.getChildAdapterPosition(v)>10)
-        {
-
-        }
         scrollToBottom();
     }
 

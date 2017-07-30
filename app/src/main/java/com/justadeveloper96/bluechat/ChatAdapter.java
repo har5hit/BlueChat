@@ -13,20 +13,19 @@ import helpers.Utils;
 import model.Message;
 
 /**
- * Created by harshith on 24/7/17.
+ * Created by Harshith on 20/7/17.
  */
 
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     Context ctx;
     List<Object> list;
-    String string;
 
     Message message;
 
     private static final int SELF = 531;
     private static final int OTHER = 997;
     private static final int STATUS_MESSAGE = 456;
-    private static String MY_MAC;
+    private String MY_MAC;
 
     public ChatAdapter(Context ctx, List<Object> list, String my_mac) {
         this.ctx = ctx;
@@ -93,6 +92,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (list.get(position) instanceof String) {
             return STATUS_MESSAGE;
         }
+
         if (((Message) list.get(position)).user_mac.equals(MY_MAC)) {
             return SELF;
         }

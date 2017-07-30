@@ -9,7 +9,7 @@ import android.content.Intent;
 import java.util.Set;
 
 /**
- * Created by harshit on 16-07-2017.
+ * Created by Harshith on 16-07-2017.
  */
 
 public class BlueHelper {

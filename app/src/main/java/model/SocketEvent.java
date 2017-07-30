@@ -3,7 +3,7 @@ package model;
 import android.bluetooth.BluetoothSocket;
 
 /**
- * Created by harshith on 27/7/17.
+ * Created by Harshith on 27/7/17.
  */
 
 public class SocketEvent {

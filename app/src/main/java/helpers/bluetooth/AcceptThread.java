@@ -15,16 +15,18 @@ import model.ChatStatusEvent;
 import model.SocketEvent;
 
 /**
- * Created by harshith on 24/7/17.
+ * Created by Harshith on 24/7/17.
  */
 
 public class AcceptThread extends Thread {
     private final BluetoothServerSocket mmServerSocket;
     private static final String TAG = "AcceptThread";
-    public AcceptThread() {
+    private String macAddress;
+    public AcceptThread(String macAddress) {
         // Use a temporary object that is later assigned to mmServerSocket
         // because mmServerSocket is final.
         BluetoothServerSocket tmp = null;
+        this.macAddress=macAddress;
         try {
             // MY_UUID is the app's UUID string, also used by the client code.
             tmp = BluetoothAdapter.getDefaultAdapter()
@@ -37,14 +39,14 @@ public class AcceptThread extends Thread {
 
     public void run() {
         BluetoothSocket socket = null;
-        EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_LISTENING));
+        EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_LISTENING,macAddress));
         // Keep listening until exception occurs or a socket is returned.
         while (true) {
             try {
                 socket = mmServerSocket.accept();
             } catch (IOException e) {
                 Log.e(TAG, "Socket's accept() method failed", e);
-                EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_DISCONNECTED));
+                EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_LISTENING_FAILED,macAddress));
                 cancel();
                 break;
             }

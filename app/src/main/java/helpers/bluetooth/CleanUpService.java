@@ -11,7 +11,9 @@ import org.greenrobot.eventbus.EventBus;
 import helpers.Utils;
 import model.ChatStatusEvent;
 
-
+/**
+ * Created by Harshith on 27/7/17.
+ */
 public class CleanUpService extends Service {
     public CleanUpService() {
     }

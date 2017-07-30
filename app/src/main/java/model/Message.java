@@ -4,7 +4,7 @@ import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 /**
- * Created by harshith on 26/7/17.
+ * Created by Harshith on 26/7/17.
  */
 
 public class Message extends RealmObject {

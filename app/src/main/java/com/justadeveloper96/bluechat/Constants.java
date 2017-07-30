@@ -8,7 +8,7 @@ import java.util.UUID;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
- * Created by sankalp on 20/7/17.
+ * Created by Harshith on 20/7/17.
  */
 
 public class Constants {
@@ -38,6 +38,6 @@ public class Constants {
     @IntDef({STATUS_CONNECTING,STATUS_CONNECTED,STATUS_CONNECTING_FAILED,STATUS_LISTENING,STATUS_LISTENING_FAILED,STATUS_DISCONNECTED,STATUS_TYPING})
     public @interface ChatStatusConstants{}
 
-    public static String[] ERROR_MSG={"Connecting...","Connected","Connection failed","Listening","Listening failed","Disconnected","Typing..."};
+    public static String[] ERROR_MSG={"Connecting...","Connected","Connection failed","Ready to connect..","Listening failed","Disconnected","Typing..."};
 
 }

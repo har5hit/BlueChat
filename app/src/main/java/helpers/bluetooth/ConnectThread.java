@@ -1,7 +1,7 @@
 package helpers.bluetooth;
 
 /**
- * Created by harshith on 24/7/17.
+ * Created by Harshith on 24/7/17.
  */
 
 import android.bluetooth.BluetoothDevice;
@@ -45,11 +45,11 @@ public class ConnectThread extends Thread {
         try {
             // Connect to the remote device through the socket. This call blocks
             // until it succeeds or throws an exception.
-            EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTING));
+            EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTING,mmDevice.getAddress()));
             mmSocket.connect();
         } catch (IOException connectException) {
             // Unable to connect; close the socket and return.
-            EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTING_FAILED));
+            EventBus.getDefault().post(new ChatStatusEvent(Constants.STATUS_CONNECTING_FAILED,mmDevice.getAddress()));
             cancel();
 
             return;
@@ -62,7 +62,7 @@ public class ConnectThread extends Thread {
 
     private void manageMyConnectedSocket(BluetoothSocket mmSocket) {
         EventBus.getDefault().post(new SocketEvent(mmSocket));
-        EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_CONNECTED));
+        EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_CONNECTED,mmDevice.getAddress()));
     }
 
     // Closes the client socket and causes the thread to finish.

@@ -3,14 +3,22 @@ package model;
 import com.justadeveloper96.bluechat.Constants;
 
 /**
- * Created by harshith on 28/7/17.
+ * Created by Harshith on 28/7/17.
  */
 
 public class ChatStatusEvent {
 
-    public int status;
+    @Constants.ChatStatusConstants public int status;
+    public String macAddress="";
 
-    public ChatStatusEvent(@Constants.ChatStatusConstants int status) {
+
+    public ChatStatusEvent(int status) {
         this.status = status;
+    }
+
+    public ChatStatusEvent(@Constants.ChatStatusConstants int status, String macAddress) {
+        this.status = status;
+        this.macAddress = macAddress;
+
     }
 }

@@ -3,50 +3,80 @@ package com.justadeveloper96.bluechat;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import helpers.bluetooth.CleanUpService;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends BlueActivity {
+import helpers.RealmManager;
+import helpers.bluetooth.CleanUpService;
+import model.User;
+
+import static helpers.Utils.getContext;
+
+/**
+ * Created by Harshith on 20/7/17.
+ */
+
+
+public class MainActivity extends BlueActivity implements ItemClickListener {
+
+
+    private RecyclerView recyclerView;
+    private ContactsAdapter cAdapter;
+
+    public List<User> list;
+
 
     private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startService(new Intent(this, CleanUpService.class));
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+        init();
+    }
+
+    private void init() {
+
+        startService(new Intent(this, CleanUpService.class));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               /* Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
-
-              // startActivity(new Intent(MainActivity.this,SearchActivity.class));
-               startActivity(new Intent(MainActivity.this,SearchActivity.class));
+                startActivity(new Intent(MainActivity.this,SearchActivity.class));
             }
         });
 
-     /*   if (!SharedPrefs.getPrefs().isloggedIn())
-        {
-            openProfile();
-            return;
-        }*/
+        list=new ArrayList<>();
+        cAdapter=new ContactsAdapter(this,list,this);
 
-        setFragment(new ContactsListFragment());
+        recyclerView= (RecyclerView) findViewById(R.id.recycler_view);
 
+        Log.d(TAG, "setUpList: cadapter");
+
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(cAdapter);
     }
 
-    private void setFragment(Fragment fragment) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        list.clear();
+        list.addAll(RealmManager.getAllStoredContacts().findAll());
+        cAdapter.notifyDataSetChanged();
+    }
+
+   /* private void setFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
 // Replace whatever is in the fragment_container view with this fragment,
@@ -56,7 +86,7 @@ public class MainActivity extends BlueActivity {
 
 // Commit the transaction
         transaction.commit();
-    }
+    }*/
 
     private void openProfile() {
         startActivity(new Intent(this,ProfileActivity.class));
@@ -65,7 +95,7 @@ public class MainActivity extends BlueActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -85,11 +115,11 @@ public class MainActivity extends BlueActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
-    public void onBackPressed() {
-        Log.d(TAG, "onBackPressed: ");
-        finish();
-      //  super.onBackPressed();
+    public void onItemClick(int position) {
+        startActivity(new Intent(getContext(),ChatActivity.class)
+                .putExtra(Constants.MAC_ADDRESS,list.get(position).macAddress)
+                .putExtra(Constants.NAME,list.get(position).name)
+        );
     }
 }

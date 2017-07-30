@@ -7,12 +7,41 @@
     android:orientation="vertical"
     tools:context="com.justadeveloper96.bluechat.ProfileActivity">
 
-
-    <EditText
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/tv_user_name"
-        android:hint="User name"/>
+        android:id="@+id/ll_name_container">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/xml_border_black"
+        android:id="@+id/rl_name"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="4dp"
+        android:padding="6dp">
+
+        <EditText
+            android:id="@+id/ed_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Message"
+            android:minHeight="36dp"
+            android:enabled="false"
+            />
+        <ImageButton
+            android:id="@+id/btn_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_edit"
+            android:layout_alignParentEnd="true"
+            android:tint="@color/accent"
+            />
+    </RelativeLayout>
 
 
     <Button
@@ -20,6 +49,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/btn_save"
         android:text="Save"
-        android:onClick="saveProfile"/>
-
+        android:visibility="gone"/>
+    </LinearLayout>
 </LinearLayout>

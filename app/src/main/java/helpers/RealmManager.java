@@ -8,7 +8,7 @@ import io.realm.RealmQuery;
 import model.User;
 
 /**
- * Created by sankalp on 20/7/17.
+ * Created by Harshith on 20/7/17.
  */
 
 public class RealmManager {

@@ -27,6 +27,10 @@ import helpers.bluetooth.BlueHelper;
 
 import static helpers.Utils.getContext;
 
+/**
+ * Created by Harshith on 27/7/17.
+ */
+
 public class SearchActivity extends BlueActivity implements Runnable, ItemClickListener, PermissionHelper.PermissionsListener {
     //private ContactsListFragment fragment;
     private Button scan;

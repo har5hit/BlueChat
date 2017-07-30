@@ -1,7 +1,7 @@
 package model;
 
 /**
- * Created by harshith on 24/7/17.
+ * Created by Harshith on 24/7/17.
  */
 
 public class MessageEvent {

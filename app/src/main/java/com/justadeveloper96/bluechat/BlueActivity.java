@@ -6,6 +6,10 @@ import android.os.Bundle;
 
 import helpers.bluetooth.BlueHelper;
 
+/**
+ * Created by Harshith on 20/7/17.
+ */
+
 public class BlueActivity extends AppCompatActivity {
 
     @Override

@@ -18,6 +18,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import helpers.bluetooth.BlueHelper;
@@ -27,10 +29,8 @@ import model.ChatStatusEvent;
 import model.MessageEvent;
 import model.User;
 
-import static helpers.RealmHelper.realm;
-
 /**
- * Created by harshit on 16-07-2017.
+ * Created by Harshith on 16-07-2017.
  */
 
 public class MyApplication extends Application {
@@ -44,12 +44,19 @@ public class MyApplication extends Application {
     private static String macAdress_my;
 
     private static User user;
+
+    private static Map<String,String> addressName;
+    public static Map<String,Integer> notify_id;
+    public static Map<String,Integer> notify_count;
     @Override
     public void onCreate() {
         super.onCreate();
         INSTANCE=getApplicationContext();
         currentWindow="";
         macAdress_my=BlueHelper.getBluetoothAdapter().getAddress();
+        addressName=new HashMap<>();
+        notify_id=new HashMap<>();
+        notify_count=new HashMap<>();
         EventBus.getDefault().register(this);
     }
 
@@ -61,9 +68,15 @@ public class MyApplication extends Application {
 
     public static BluetoothService getBLUETOOTHSERVICE(BluetoothSocket socket, String macAddress,String name_other)
     {
+
         if (BLUETOOTHSERVICE==null)
         {
             BLUETOOTHSERVICE=new BluetoothService(socket,macAddress,macAdress_my,name_other);
+            addressName.put(macAddress,name_other);
+            if (!notify_id.containsKey(macAddress))
+            {
+                notify_id.put(macAddress,new Random().nextInt());
+            }
             user= Realm.getDefaultInstance().where(User.class).equalTo("macAddress",macAddress).findFirst();
             return BLUETOOTHSERVICE;
         }
@@ -73,7 +86,7 @@ public class MyApplication extends Application {
             Utils.log("bservice already exists, giving back");
             return BLUETOOTHSERVICE;
         }else {
-            closeBluetoothService();
+            closeBluetoothService(BLUETOOTHSERVICE.macAddress);
             return getBLUETOOTHSERVICE(socket,macAddress,name_other);
         }
     }
@@ -87,7 +100,7 @@ public class MyApplication extends Application {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void storeMessage(MessageEvent me) {
-
+        long current_time=System.currentTimeMillis();
         Utils.log("storing in application"+me.toString());
         String data;
         if (me.message.what== BluetoothService.MessageConstants.MESSAGE_READ)
@@ -99,31 +112,30 @@ public class MyApplication extends Application {
         }
 
         Number n;
-        final int val;
+        final int m_id;
         if (user==null)
         {
             RealmManager.getRealm().beginTransaction();
 
-            n=realm.where(User.class).max("message_id");
+            n=RealmManager.getRealm().where(User.class).max("message_id");
             if (n==null)
             {
-                val=1;
+                m_id=1;
             }else
             {
-                val=n.intValue()+1;
+                m_id=n.intValue()+1;
             }
-            user=new User(me.user_name,me.macAddress_other,val);
-            user.last_message=data;
-            user.last_msg_time=System.currentTimeMillis();
-            realm.insertOrUpdate(user);
+            user=new User(me.user_name,me.macAddress_other,m_id);
+            user=RealmManager.getRealm().copyToRealm(user);
             Utils.log("user created");
             RealmManager.getRealm().commitTransaction();
-
         }
+
         RealmManager.getRealm().beginTransaction();
-        user.last_message=data;
-        user.last_msg_time=System.currentTimeMillis();
+        user.last_message = data;
+        user.last_msg_time = current_time;
         RealmManager.getRealm().commitTransaction();
+
 
         RealmManager.saveData(new model.Message(data,me.macAddress,System.currentTimeMillis(),user.message_id));
         if (me.message.what== BluetoothService.MessageConstants.MESSAGE_READ)
@@ -141,11 +153,27 @@ public class MyApplication extends Application {
             return;
         }
 
+
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        int count=0;
+        try {
+            count=notify_count.get(macAddress);
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
         android.support.v4.app.NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_action_send)
                         .setContentTitle(user_name)
-                        .setContentText(data);
+                        .setContentText(data)
+                        .setNumber(++count)
+                        .setAutoCancel(true);
+
+        notify_count.put(macAddress,count);
 // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(this, ChatActivity.class);
         resultIntent.putExtra(Constants.NAME,user_name);
@@ -165,13 +193,12 @@ public class MyApplication extends Application {
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
         mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 // mNotificationId is a unique integer your app uses to identify the
 // notification. For example, to cancel the notification, you can pass its ID
 // number to NotificationManager.cancel().
-        mNotificationManager.notify(new Random().nextInt(),mBuilder.build());
+        int id=notify_id.get(macAddress);
+        mNotificationManager.notify(id,mBuilder.build());
     }
 
 
@@ -180,18 +207,23 @@ public class MyApplication extends Application {
     {
         if (statusEvent.status==Constants.STATUS_DISCONNECTED)
         {
-            closeBluetoothService();
+            closeBluetoothService(statusEvent.macAddress);
         }
     }
 
-    public static void closeBluetoothService()
+    public static void closeBluetoothService(String macAddress)
     {
-
         if (BLUETOOTHSERVICE==null)
         {
             return;
         }
         try {
+            String s=macAddress;
+            if (s.isEmpty())
+            {
+                s=BLUETOOTHSERVICE.macAddress;
+            }
+            Utils.showToast(getINSTANCE().getApplicationContext(),addressName.get(s)+" "+Constants.ERROR_MSG[Constants.STATUS_DISCONNECTED]);
             Utils.log("application bservice close");
             BLUETOOTHSERVICE.close();
         }catch (Exception e)
