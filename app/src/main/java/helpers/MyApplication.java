@@ -71,6 +71,7 @@ public class MyApplication extends Application {
 
         if (BLUETOOTHSERVICE==null)
         {
+            Utils.log("Creating new Bluetooth Service");
             BLUETOOTHSERVICE=new BluetoothService(socket,macAddress,macAdress_my,name_other);
             addressName.put(macAddress,name_other);
             if (!notify_id.containsKey(macAddress))

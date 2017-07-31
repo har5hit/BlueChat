@@ -182,13 +182,13 @@ public class BluetoothService {
 
         // Call this method from the main activity to shut down the connection.
         public void cancel() {
-            EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_DISCONNECTED,macAddress));
             writtenMsg=null;
             try {
                 mmSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, "Could not close the connect socket", e);
             }
+            EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_DISCONNECTED,macAddress));
 
         }
     }

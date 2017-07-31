@@ -29,6 +29,7 @@ import helpers.bluetooth.AcceptThread;
 import helpers.bluetooth.BlueHelper;
 import helpers.bluetooth.BluetoothService;
 import helpers.bluetooth.ConnectThread;
+import io.realm.RealmResults;
 import io.realm.Sort;
 import model.ChatStatusEvent;
 import model.Message;
@@ -40,7 +41,7 @@ import model.User;
  * Created by Harshith on 20/7/17.
  */
 
-public class ChatActivity extends BlueActivity implements View.OnClickListener, View.OnLayoutChangeListener{
+public class ChatActivity extends BlueActivity implements View.OnClickListener, View.OnLayoutChangeListener {
 
     private RecyclerView rv;
     private EditText message;
@@ -72,6 +73,15 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     Thread thread;
 
     private boolean isConnected;
+    private LinearLayoutManager manager;
+
+    int current_msg_count;
+
+    int total_msg_count;
+
+    RealmResults<Message> chat_db;
+
+    boolean pagination_done;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,11 +100,32 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
         send.setOnClickListener(this);
         rv.addOnLayoutChangeListener(this);
+        rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(manager.findLastCompletelyVisibleItemPosition()==list.size()-1)
+                {
+                    loadMore();
+                }
+            }
+        });
 
     }
 
     private void getUserAndMessages() {
-        user=RealmManager.getAllStoredContacts().equalTo("macAddress",macAddress_other).findFirst();
+      /*  user=RealmManager.getAllStoredContacts().equalTo("macAddress",macAddress_other).findFirst();
+        if (user!=null) {
+            chat_db = RealmManager.getRealm().where(Message.class).equalTo("id", user.message_id).findAllSorted("timestamp", Sort.DESCENDING);
+            total_msg_count =chat_db.size();
+            loadMore();
+            rv.scrollToPosition(0);
+        }*/
     }
 
     private void init() {
@@ -112,7 +143,7 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
         list=new ArrayList<>();
 
-        LinearLayoutManager manager = new LinearLayoutManager(this);
+        manager = new LinearLayoutManager(this);
         manager.setStackFromEnd(true);
         manager.setReverseLayout(true);
         rv.setLayoutManager(manager);
@@ -129,6 +160,10 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
         cAdapter=new ChatAdapter(this,list,macAddress_my);
 
         rv.setAdapter(cAdapter);
+
+        current_msg_count = total_msg_count =0;
+
+        pagination_done=false;
     }
 
 
@@ -166,11 +201,11 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void storeMessage(MessageEvent me) {
 
-        if (me.message.what== BluetoothService.MessageConstants.MESSAGE_TOAST)
+        if (!me.macAddress_other.equals(macAddress_other))
         {
-            //Utils.showToast(this,msg.getData().getString("toast"));
             return;
         }
+
         String data;
 
         String who;
@@ -287,8 +322,11 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
             TransitionManager.beginDelayedTransition(toolbar);
             status.setVisibility(View.VISIBLE);
         }
-        btn_connect.setTitle(R.string.menu_disconnect);
-        btn_connect.setEnabled(true);
+
+        if (btn_connect!=null) {
+            btn_connect.setTitle(R.string.menu_disconnect);
+            btn_connect.setEnabled(true);
+        }
         Utils.showToast(this,name_other+" "+Constants.ERROR_MSG[Constants.STATUS_CONNECTED]);
         status.setText(Constants.ERROR_MSG[Constants.STATUS_CONNECTED]);
 
@@ -299,9 +337,10 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     {
         connection=null;
         isConnected=false;
-        btn_connect.setTitle(R.string.menu_connect);
-        btn_connect.setEnabled(true);
-        //Utils.showToast(this,name_other+" "+Constants.ERROR_MSG[Constants.STATUS_DISCONNECTED]);
+        if (btn_connect!=null) {
+            btn_connect.setTitle(R.string.menu_connect);
+            btn_connect.setEnabled(true);
+        }//Utils.showToast(this,name_other+" "+Constants.ERROR_MSG[Constants.STATUS_DISCONNECTED]);
         title.setCompoundDrawablesWithIntrinsicBounds(0,0,android.R.drawable.presence_invisible,0);
     }
     @Override
@@ -328,6 +367,7 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
         {
             RealmManager.getRealm().beginTransaction();
             RealmManager.getRealm().where(User.class).equalTo("macAddress",macAddress_other).findFirst().last_read_time=System.currentTimeMillis();
+            RealmManager.getRealm().where(User.class).equalTo("macAddress",macAddress_other).findFirst().name=name_other;
             RealmManager.getRealm().commitTransaction();
         }
     }
@@ -338,20 +378,15 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
         MyApplication.currentWindow=macAddress_other;
         EventBus.getDefault().register(this);
 
-        list.clear();
+        user=RealmManager.getAllStoredContacts().equalTo("macAddress",macAddress_other).findFirst();
 
         if (user!=null) {
-            List<Message> temp = RealmManager.getRealm().copyFromRealm(
-                    RealmManager.getRealm().where(Message.class).equalTo("id", user.message_id).findAllSorted("timestamp", Sort.DESCENDING).subList(0,10));
-
-            if (temp != null) {
-                list.addAll(temp);
-                cAdapter.notifyDataSetChanged();
-                rv.scrollToPosition(0);
-            }
+            list.clear();
+            chat_db = RealmManager.getRealm().where(Message.class).equalTo("id", user.message_id).findAllSorted("timestamp", Sort.DESCENDING);
+            total_msg_count =chat_db.size();
+            Utils.log("Chat Activity on resume user found"+total_msg_count);
+            loadMore();
         }
-
-
 
         try{
             int notify_id=MyApplication.notify_id.get(macAddress_other);
@@ -391,7 +426,23 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        scrollToBottom();
+        if (pagination_done)
+        {
+            pagination_done=false;
+        }else
+        {
+            scrollToBottom();
+        }
     }
 
+    private void loadMore() {
+        Utils.log("load more called");
+        if (total_msg_count > current_msg_count) {
+            current_msg_count =  current_msg_count+20;
+            current_msg_count=  (current_msg_count<total_msg_count)?current_msg_count:total_msg_count;
+            list.addAll(chat_db.subList(list.size(),current_msg_count));
+            pagination_done=true;
+            cAdapter.notifyDataSetChanged();
+        }
+    }
 }

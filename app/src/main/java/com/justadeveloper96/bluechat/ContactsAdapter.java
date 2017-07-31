@@ -43,6 +43,8 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
         if (user.last_msg_time>user.last_read_time)
         {
             holder.last_message.setTypeface(null, Typeface.BOLD_ITALIC);
+        }else {
+            holder.last_message.setTypeface(null, Typeface.NORMAL);
         }
     }
 

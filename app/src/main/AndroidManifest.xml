@@ -29,7 +29,8 @@
         <activity android:name=".ProfileActivity" />
         <activity
             android:name=".ChatActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".MainActivity"/>
         <service
             android:name="helpers.bluetooth.CleanUpService"
             android:enabled="true"

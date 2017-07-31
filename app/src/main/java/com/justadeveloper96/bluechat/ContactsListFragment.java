@@ -1,3 +1,4 @@
+/*
 package com.justadeveloper96.bluechat;
 
 import android.content.Intent;
@@ -19,12 +20,16 @@ import helpers.RealmManager;
 import helpers.Utils;
 import model.User;
 
+*/
 /**
  * Created by harshith on 24/7/17.
- */
+ *//*
+
+*/
 /**
  * A placeholder fragment containing a simple view.
- */
+ *//*
+
 public class ContactsListFragment extends Fragment implements ItemClickListener {
 
     private static final String TAG = "ContactsListFragment";
@@ -95,3 +100,4 @@ public class ContactsListFragment extends Fragment implements ItemClickListener 
         Utils.log("refreshed");
     }
 }
+*/

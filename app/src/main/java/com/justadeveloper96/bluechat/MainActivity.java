@@ -11,11 +11,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import helpers.RealmManager;
 import helpers.bluetooth.CleanUpService;
+import model.MessageEvent;
 import model.User;
 
 import static helpers.Utils.getContext;
@@ -32,7 +37,6 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
     private ContactsAdapter cAdapter;
 
     public List<User> list;
-
 
     private static final String TAG = "MainActivity";
     @Override
@@ -55,12 +59,15 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
             }
         });
 
-        list=new ArrayList<>();
-        cAdapter=new ContactsAdapter(this,list,this);
 
         recyclerView= (RecyclerView) findViewById(R.id.recycler_view);
 
         Log.d(TAG, "setUpList: cadapter");
+
+        list=new ArrayList<>();
+        list.addAll(RealmManager.getAllStoredContacts().findAll());
+
+        cAdapter=new ContactsAdapter(this,list,this);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -74,19 +81,24 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
         list.clear();
         list.addAll(RealmManager.getAllStoredContacts().findAll());
         cAdapter.notifyDataSetChanged();
+        EventBus.getDefault().register(this);
     }
 
-   /* private void setFragment(Fragment fragment) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+    @Override
+    protected void onPause() {
+        EventBus.getDefault().unregister(this);
+        super.onPause();
+    }
 
-// Replace whatever is in the fragment_container view with this fragment,
-// and add the transaction to the back stack if needed
-        transaction.replace(R.id.fl_container,fragment );
-        transaction.addToBackStack(null);
-
-// Commit the transaction
-        transaction.commit();
-    }*/
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void storeMessage(MessageEvent me) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).macAddress.equals(me.macAddress_other))
+            {
+                cAdapter.notifyItemChanged(i);
+            }
+        }
+    }
 
     private void openProfile() {
         startActivity(new Intent(this,ProfileActivity.class));
