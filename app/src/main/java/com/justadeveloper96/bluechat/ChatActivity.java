@@ -2,6 +2,7 @@ package com.justadeveloper96.bluechat;
 
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.transition.TransitionManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -164,6 +165,11 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
         current_msg_count = total_msg_count =0;
 
         pagination_done=false;
+
+        if (device_other.getBondState()!=BluetoothDevice.BOND_BONDED)
+        {
+            device_other.createBond();
+        }
     }
 
 
@@ -187,15 +193,28 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
                 MyApplication.closeBluetoothService(macAddress_other);
                 connection=null;
             } else {
+                if (device_other.getBondState()!=BluetoothDevice.BOND_BONDED)
+                {
+                    device_other.createBond();
+                    return true;
+                }
                 startThread(MODE_CONNECT);
             }
-
+            
             btn_connect.setEnabled(false);
-        }else if (item.getItemId()==android.R.id.home)
-        {
-            finish();
+        }else if (item.getItemId()==android.R.id.home) {
+            onBackPressed();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isTaskRoot())
+        {
+            startActivity(new Intent(this,MainActivity.class));
+        }
+        super.onBackPressed();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

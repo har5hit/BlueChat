@@ -11,7 +11,6 @@ import android.support.v7.app.NotificationCompat;
 
 import com.justadeveloper96.bluechat.ChatActivity;
 import com.justadeveloper96.bluechat.Constants;
-import com.justadeveloper96.bluechat.MainActivity;
 import com.justadeveloper96.bluechat.R;
 
 import org.greenrobot.eventbus.EventBus;
@@ -185,7 +184,7 @@ public class MyApplication extends Application {
 // your application to the Home screen.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 // Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addParentStack(ChatActivity.class);
 // Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
         PendingIntent resultPendingIntent =

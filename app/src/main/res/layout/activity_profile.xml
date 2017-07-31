@@ -7,11 +7,6 @@
     android:orientation="vertical"
     tools:context="com.justadeveloper96.bluechat.ProfileActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/ll_name_container">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,9 +23,10 @@
             android:id="@+id/ed_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Message"
+            android:hint="Enter Name"
             android:minHeight="36dp"
             android:enabled="false"
+            android:maxLength="20"
             />
         <ImageButton
             android:id="@+id/btn_edit"
@@ -44,11 +40,15 @@
     </RelativeLayout>
 
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/btn_save"
-        android:text="Save"
-        android:visibility="gone"/>
+        android:id="@+id/ll_save">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_save"
+            android:text="Save"
+            android:visibility="gone"/>
     </LinearLayout>
 </LinearLayout>

@@ -1,6 +1,9 @@
 package com.justadeveloper96.bluechat;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -15,6 +18,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,10 +125,25 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             openProfile();
-            return true;
-        }
+        }else if(id==R.id.action_share)
+        {
+            final PackageManager pm = getPackageManager();
+//get a list of installed apps.
+            PackageInfo packages = null;
+            try {
+                packages = pm.getPackageInfo(getApplicationContext().getPackageName(), PackageManager.GET_META_DATA);
+                Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+                File file = new File(packages.applicationInfo.sourceDir);
+                sharingIntent.setType("text/plain");
+                sharingIntent.setPackage("com.android.bluetooth");
+                sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+                startActivity(Intent.createChooser(sharingIntent, "Share App"));
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
 
-        return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     @Override
