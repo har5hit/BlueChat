@@ -385,8 +385,8 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
         if (list.size()>0)
         {
             RealmManager.getRealm().beginTransaction();
-            RealmManager.getRealm().where(User.class).equalTo("macAddress",macAddress_other).findFirst().last_read_time=System.currentTimeMillis();
-            RealmManager.getRealm().where(User.class).equalTo("macAddress",macAddress_other).findFirst().name=name_other;
+            RealmManager.getAllStoredContacts().equalTo("macAddress",macAddress_other).findFirst().last_read_time=System.currentTimeMillis();
+            RealmManager.getAllStoredContacts().equalTo("macAddress",macAddress_other).findFirst().name=name_other;
             RealmManager.getRealm().commitTransaction();
         }
     }
@@ -425,6 +425,11 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
             title.setCompoundDrawablesWithIntrinsicBounds(0,0,android.R.drawable.presence_online,0);
             status.setText(Constants.ERROR_MSG[Constants.STATUS_CONNECTED]);
             isConnected=true;
+            if (!name_other.equals(device_other.getName()))
+            {
+                name_other=device_other.getName();
+                title.setText(name_other);
+            }
         }
     }
 

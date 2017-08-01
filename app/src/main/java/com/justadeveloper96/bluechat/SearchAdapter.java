@@ -22,6 +22,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
     private final ItemClickListener listener;
 
     @DrawableRes int state;
+    @DrawableRes int icon;
 
     public SearchAdapter(List<BluetoothDevice> devices, List<Boolean> states, ItemClickListener listener, Context context) {
         this.devices = devices;
@@ -32,7 +33,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
 
     @Override
     public SearchAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MyViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_search,parent,false));
+        return new MyViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1,parent,false));
     }
 
     @Override
@@ -57,7 +58,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.MyViewHold
         TextView text;
         public MyViewHolder(View itemView) {
             super(itemView);
-            text= (TextView) itemView.findViewById(R.id.text);
+            text= (TextView) itemView.findViewById(android.R.id.text1);
             itemView.setOnClickListener(this);
         }
 

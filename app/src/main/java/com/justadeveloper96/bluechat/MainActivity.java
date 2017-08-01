@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -34,13 +35,17 @@ import static helpers.Utils.getContext;
  */
 
 
-public class MainActivity extends BlueActivity implements ItemClickListener {
+public class MainActivity extends BlueActivity implements ItemClickListener, View.OnClickListener {
 
 
     private RecyclerView recyclerView;
     private ContactsAdapter cAdapter;
 
     public List<User> list;
+    FloatingActionButton fab;
+
+
+    private LinearLayout ll_empty;
 
     private static final String TAG = "MainActivity";
     @Override
@@ -55,14 +60,9 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
 
         startService(new Intent(this, CleanUpService.class));
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this,SearchActivity.class));
-            }
-        });
-
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(this);
+        ll_empty= (LinearLayout) findViewById(R.id.ll_empty);
 
         recyclerView= (RecyclerView) findViewById(R.id.recycler_view);
 
@@ -84,6 +84,14 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
         super.onResume();
         list.clear();
         list.addAll(RealmManager.getAllStoredContacts().findAll());
+        if (list.size()>0)
+        {
+            ll_empty.setVisibility(View.GONE);
+        }else
+        {
+            ll_empty.setVisibility(View.VISIBLE);
+        }
+
         cAdapter.notifyDataSetChanged();
         EventBus.getDefault().register(this);
     }
@@ -125,7 +133,7 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             openProfile();
-        }else if(id==R.id.action_share)
+        }else if(id==R.id.action_send)
         {
             final PackageManager pm = getPackageManager();
 //get a list of installed apps.
@@ -137,7 +145,7 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
                 sharingIntent.setType("text/plain");
                 sharingIntent.setPackage("com.android.bluetooth");
                 sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
-                startActivity(Intent.createChooser(sharingIntent, "Share App"));
+                startActivity(Intent.createChooser(sharingIntent, "Send App"));
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
@@ -152,5 +160,10 @@ public class MainActivity extends BlueActivity implements ItemClickListener {
                 .putExtra(Constants.MAC_ADDRESS,list.get(position).macAddress)
                 .putExtra(Constants.NAME,list.get(position).name)
         );
+    }
+
+    @Override
+    public void onClick(View v) {
+        startActivity(new Intent(MainActivity.this,SearchActivity.class));
     }
 }

@@ -1,6 +1,7 @@
 package com.justadeveloper96.bluechat;
 
 import android.Manifest;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -77,8 +78,19 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
     public void searchForPairedDevices() {
 
         Set<BluetoothDevice> devices= BlueHelper.getAllPairedDevices();
-        this.devices.addAll(devices);
-        for (int i = 0; i < devices.size(); i++) {
+
+        //this.devices.addAll(devices);
+        for (BluetoothDevice device:devices) {
+            try {
+                if (device.getBluetoothClass().getDeviceClass() != BluetoothClass.Device.PHONE_SMART) {
+                    return;
+                }
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            this.devices.add(device);
             this.states.add(false);
         }
         sAdapter.notifyDataSetChanged();
@@ -95,6 +107,15 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
                 // RealmManager.saveData(new User(device.getName(),device.getAddress()));
                /* fragment.getList().add(new User(device.getName(),device.getAddress()));
                 fragment.getAdapter().notifyItemInserted(fragment.getList().size());*/
+
+               try {
+                   if (device.getBluetoothClass().getDeviceClass() != BluetoothClass.Device.PHONE_SMART) {
+                       return;
+                   }
+               }catch (Exception e)
+               {
+                   e.printStackTrace();
+               }
 
                if (!devices.contains(device)) {
                    devices.add(device);
@@ -143,6 +164,7 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
 
     @Override
     public void run() {
+        scan.setText("Start Scan");
         scan.setEnabled(true);
     }
 
@@ -171,6 +193,7 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
         searchForPairedDevices();
         BlueHelper.setDiscoverable(this);
         BlueHelper.startDiscovery();
+        scan.setText("Scanning...");
         scan.setEnabled(false);
         unlockScan();
     }
