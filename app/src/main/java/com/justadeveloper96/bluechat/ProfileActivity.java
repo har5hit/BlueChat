@@ -1,6 +1,7 @@
 package com.justadeveloper96.bluechat;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
@@ -9,7 +10,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.transitionseverywhere.Slide;
 import com.transitionseverywhere.TransitionManager;
@@ -23,16 +23,13 @@ import helpers.bluetooth.BlueHelper;
  * Created by Harshith on 20/7/17.
  */
 
-public class ProfileActivity extends BlueActivity implements View.OnClickListener, TextWatcher {
+public class ProfileActivity extends AppCompatActivity implements View.OnClickListener, TextWatcher {
 
     private EditText name;
     private ImageButton edit;
     private Button save;
     private LinearLayout container_save;
-    private RelativeLayout container_edit;
     private String current_name;
-
-    boolean save_visible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +51,6 @@ public class ProfileActivity extends BlueActivity implements View.OnClickListene
         name= (EditText) findViewById(R.id.ed_name);
         edit= (ImageButton) findViewById(R.id.btn_edit);
         save= (Button) findViewById(R.id.btn_save);
-        container_edit= (RelativeLayout) findViewById(R.id.rl_name);
         container_save = (LinearLayout) findViewById(R.id.ll_save);
         current_name= BlueHelper.getBluetoothAdapter().getName();
         name.setText(current_name);
@@ -77,28 +73,22 @@ public class ProfileActivity extends BlueActivity implements View.OnClickListene
     private void editData() {
         Utils.log("edit data");
         name.setEnabled(true);
-        toggleSaveButton(true);
-        toggleEditButton(false);
+       editMode(true);
     }
 
-    private void toggleSaveButton(boolean show)
-    {
-        TransitionManager.beginDelayedTransition(container_save, new TransitionSet()
-                .addTransition(show?(new Slide(Gravity.LEFT)):(new Slide(Gravity.RIGHT))));
-        save.setVisibility(show?View.VISIBLE:View.INVISIBLE);
-    }
-
-    private void toggleEditButton(boolean show)
+    private void editMode(boolean show)
     {
         edit.setVisibility(show?View.VISIBLE:View.GONE);
+        TransitionManager.beginDelayedTransition(container_save, new TransitionSet()
+                .addTransition(show?(new Slide(Gravity.LEFT)):(new Slide(Gravity.RIGHT))));
+        save.setVisibility(show?View.INVISIBLE:View.VISIBLE);
     }
 
     private void saveData() {
         Utils.log("save data");
         current_name= Utils.getText(name);
         name.setEnabled(false);
-        toggleSaveButton(false);
-        toggleEditButton(true);
+        editMode(false);
         BlueHelper.getBluetoothAdapter().setName(current_name);
     }
 

@@ -107,22 +107,10 @@ public class MyApplication extends Application {
         {
             data = new String(((byte[]) me.message.obj),0,me.message.arg1);
 
-            if (user!=null && data.equals(Constants.TYPING))
-            {
-                RealmManager.getRealm().beginTransaction();
-                user.last_seen_time=current_time;
-                RealmManager.getRealm().commitTransaction();
-                return;
-            }
-
-
         }else
         {
             data = new String((byte[]) me.message.obj);
         }
-
-
-
 
         if (user==null)
         {
@@ -205,6 +193,7 @@ public class MyApplication extends Application {
                         0,
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
+
         mBuilder.setContentIntent(resultPendingIntent);
 
 // mNotificationId is a unique integer your app uses to identify the
@@ -230,7 +219,14 @@ public class MyApplication extends Application {
         {
             return;
         }
+
+
         try {
+            if (!BLUETOOTHSERVICE.macAddress.equals(macAddress))
+            {
+                return;
+            }
+
             String s=macAddress;
             if (s.isEmpty())
             {

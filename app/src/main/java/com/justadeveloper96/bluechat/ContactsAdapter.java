@@ -31,7 +31,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
 
     @Override
     public MyViewVolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v= LayoutInflater.from(ctx).inflate(android.R.layout.simple_list_item_2,parent,false);
+        View v= LayoutInflater.from(ctx).inflate(R.layout.list_user,parent,false);
         return new MyViewVolder(v);
     }
 
@@ -59,8 +59,8 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
 
         public MyViewVolder(View itemView) {
             super(itemView);
-            name= (TextView) itemView.findViewById(android.R.id.text1);
-            last_message = (TextView) itemView.findViewById(android.R.id.text2);
+            name= (TextView) itemView.findViewById(R.id.text1);
+            last_message = (TextView) itemView.findViewById(R.id.text2);
             itemView.setOnClickListener(this);
         }
 

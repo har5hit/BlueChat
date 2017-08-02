@@ -4,12 +4,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.justadeveloper96.bluechat.Constants;
-
-import org.greenrobot.eventbus.EventBus;
-
 import helpers.Utils;
-import model.ChatStatusEvent;
+
+import static helpers.MyApplication.BLUETOOTHSERVICE;
 
 /**
  * Created by Harshith on 27/7/17.
@@ -26,7 +23,13 @@ public class CleanUpService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        EventBus.getDefault().postSticky(new ChatStatusEvent(Constants.STATUS_DISCONNECTED));
+        try {
+            BLUETOOTHSERVICE.close();
+            Utils.showToast(getApplicationContext(),"BlueChat Disconnected");
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
         Utils.log("app killed");
         stopSelf();
         super.onTaskRemoved(rootIntent);

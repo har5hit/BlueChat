@@ -57,7 +57,7 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
 
         sAdapter=new SearchAdapter(devices,states,this,this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this,DividerItemDecoration.HORIZONTAL);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this,DividerItemDecoration.VERTICAL);
 
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(mLayoutManager);

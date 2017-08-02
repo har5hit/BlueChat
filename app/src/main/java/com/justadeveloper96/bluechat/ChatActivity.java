@@ -39,8 +39,6 @@ import model.MessageEvent;
 import model.SocketEvent;
 import model.User;
 
-import static com.justadeveloper96.bluechat.Constants.LAST_SEEN;
-
 /**
  * Created by Harshith on 20/7/17.
  */
@@ -96,8 +94,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         setUpListeners();
 
-        getUserAndMessages();
-
     }
 
     private void setUpListeners() {
@@ -115,21 +111,14 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 super.onScrolled(recyclerView, dx, dy);
                 if(manager.findLastCompletelyVisibleItemPosition()==list.size()-1)
                 {
-                    loadMore();
+                    if (user!=null)
+                    {
+                        loadMore();
+                    }
                 }
             }
         });
 
-    }
-
-    private void getUserAndMessages() {
-      /*  user=RealmManager.getAllStoredContacts().equalTo("macAddress",macAddress_other).findFirst();
-        if (user!=null) {
-            chat_db = RealmManager.getRealm().where(Message.class).equalTo("id", user.message_id).findAllSorted("timestamp", Sort.DESCENDING);
-            total_msg_count =chat_db.size();
-            loadMore();
-            rv.scrollToPosition(0);
-        }*/
     }
 
     private void init() {
@@ -318,31 +307,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         rv.smoothScrollToPosition(0);
     }
 
-    private void storeMessage(android.os.Message msg) {
-
-        if (msg.what== BluetoothService.MessageConstants.MESSAGE_TOAST)
-        {
-            //Utils.showToast(this,msg.getData().getString("toast"));
-            return;
-        }
-        String data;
-
-        String who;
-        if (msg.what== BluetoothService.MessageConstants.MESSAGE_READ)
-        {
-            data = new String(((byte[]) msg.obj),0,msg.arg1);
-            who=macAddress_other;
-        }else
-        {
-            data = new String((byte[]) msg.obj);
-            who=macAddress_my;
-        }
-
-
-        list.add(0,new Message(data,who,System.currentTimeMillis(),2439168));
-        cAdapter.notifyItemInserted(0);
-    }
-
 
     public void onChatConnected()
     {
@@ -376,7 +340,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onPause() {
         EventBus.getDefault().unregister(this);
         MyApplication.currentWindow="";
-        sendLastSeen();
         saveData();
 
         try{
@@ -392,12 +355,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onPause();
     }
 
-    private void sendLastSeen() {
-        if (isConnected)
-        {
-            connection.write(LAST_SEEN);
-        }
-    }
 
     private void saveData() {
         if (list.size()>0)
@@ -419,8 +376,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         if (user!=null) {
             list.clear();
-            chat_db = RealmManager.getRealm().where(Message.class).equalTo("id", user.message_id).findAllSorted("timestamp", Sort.DESCENDING);
-            total_msg_count =chat_db.size();
             Utils.log("Chat Activity on resume user found"+total_msg_count);
             loadMore();
         }
@@ -464,6 +419,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
         connection.write(Utils.getText(message));
+        message.setText("");
     }
 
     @Override
@@ -479,7 +435,14 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private void loadMore() {
         Utils.log("load more called");
-        if (total_msg_count > current_msg_count) {
+        chat_db = RealmManager.getRealm().where(Message.class).equalTo("id", user.message_id).findAllSorted("timestamp", Sort.DESCENDING);
+        total_msg_count =chat_db.size();
+
+        if (chat_db==null)
+        {
+            return;
+        }
+        if (total_msg_count >= current_msg_count) {
             current_msg_count =  current_msg_count+20;
             current_msg_count=  (current_msg_count<total_msg_count)?current_msg_count:total_msg_count;
             list.addAll(chat_db.subList(list.size(),current_msg_count));
