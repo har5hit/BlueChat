@@ -106,15 +106,29 @@ public class MyApplication extends Application {
         if (me.message.what== BluetoothService.MessageConstants.MESSAGE_READ)
         {
             data = new String(((byte[]) me.message.obj),0,me.message.arg1);
+
+            if (user!=null && data.equals(Constants.TYPING))
+            {
+                RealmManager.getRealm().beginTransaction();
+                user.last_seen_time=current_time;
+                RealmManager.getRealm().commitTransaction();
+                return;
+            }
+
+
         }else
         {
             data = new String((byte[]) me.message.obj);
         }
 
-        Number n;
-        final int m_id;
+
+
+
         if (user==null)
         {
+            Number n;
+            final int m_id;
+
             RealmManager.getRealm().beginTransaction();
 
             n=RealmManager.getRealm().where(User.class).max("message_id");
@@ -135,7 +149,6 @@ public class MyApplication extends Application {
         user.last_message = data;
         user.last_msg_time = current_time;
         RealmManager.getRealm().commitTransaction();
-
 
         RealmManager.saveData(new model.Message(data,me.macAddress,current_time,user.message_id));
         if (me.message.what== BluetoothService.MessageConstants.MESSAGE_READ)

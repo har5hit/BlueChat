@@ -230,6 +230,9 @@ public class PermissionHelper {
         if (key.contains("phone") || key.contains("call")) {
             return "Call";
         }
+        if (key.contains("location")) {
+            return "Location";
+        }
 
         String[] split = permission.split("\\.");
         return split[split.length - 1];

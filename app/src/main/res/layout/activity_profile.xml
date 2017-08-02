@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
     tools:context="com.justadeveloper96.bluechat.ProfileActivity">
 
     <RelativeLayout
@@ -12,9 +14,6 @@
         android:layout_height="wrap_content"
         android:background="@drawable/xml_border_black"
         android:id="@+id/rl_name"
-        android:layout_alignParentBottom="true"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginBottom="4dp"
         android:layout_marginTop="4dp"
         android:padding="6dp">
@@ -23,7 +22,7 @@
             android:id="@+id/ed_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Name"
+            android:hint="Enter Device Name"
             android:minHeight="36dp"
             android:enabled="false"
             android:maxLength="20"
@@ -43,6 +42,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:id="@+id/ll_save">
         <Button
             android:layout_width="match_parent"

@@ -2,8 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-
-    android:layout_width="match_parent"
+      android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.justadeveloper96.bluechat.SearchActivity"
     >
@@ -13,6 +12,10 @@
         android:layout_alignParentBottom="true"
         android:id="@+id/btn_scan"
         android:text="Scan"
+        android:layout_marginStart="?android:attr/listPreferredItemPaddingStart"
+        android:layout_marginEnd="?android:attr/listPreferredItemPaddingEnd"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
         android:onClick="scanNew"/>
 
     <android.support.v7.widget.RecyclerView

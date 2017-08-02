@@ -29,7 +29,8 @@ android:id="@+id/recycler_view"
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:text="No Chats yet!"/>
+        android:text="No Chats yet!"
+        android:textSize="18dp"/>
 
         <Button
             android:layout_width="wrap_content"

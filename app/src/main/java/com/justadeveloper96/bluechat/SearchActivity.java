@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -56,9 +57,14 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
 
         sAdapter=new SearchAdapter(devices,states,this,this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this,DividerItemDecoration.HORIZONTAL);
+
+        recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(sAdapter);
+
+
 
         permissionHelper=new PermissionHelper(this).setListener(this);
 
@@ -66,7 +72,7 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
 
         registerReceiver(mReceiver, filter);
 
-        startScanner();
+        //startScanner();
 
         permissionHelper.requestPermission(
                 new String[]{
@@ -188,11 +194,18 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
     }
 
     private void startScanner() {
+
+        if (!BlueHelper.getBluetoothAdapter().isEnabled())
+        {
+            BlueHelper.init(this);
+            return;
+        }
+
         devices.clear();
         states.clear();
         searchForPairedDevices();
-        BlueHelper.setDiscoverable(this);
         BlueHelper.startDiscovery();
+        BlueHelper.setDiscoverable(this);
         scan.setText("Scanning...");
         scan.setEnabled(false);
         unlockScan();
@@ -200,6 +213,7 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
 
     @Override
     public void onPermissionRejectedManyTimes(@NonNull List<String> rejectedPerms, int request_code) {
-            finish();
     }
+
+
 }

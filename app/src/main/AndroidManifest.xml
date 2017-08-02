@@ -17,24 +17,41 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SearchActivity" android:label="Search For Nearby Devices"/>
+        <activity
+            android:name=".SearchActivity"
+            android:label="Search For Nearby Devices"
+            android:screenOrientation="portrait" />
         <activity android:name=".BlueActivity" />
-        <activity android:name=".ProfileActivity" />
+        <activity
+            android:name=".ProfileActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ChatActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <service
             android:name="helpers.bluetooth.CleanUpService"
             android:enabled="true"
-            android:stopWithTask="false"></service>
+            android:stopWithTask="false" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.justadeveloper96.bluechat.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

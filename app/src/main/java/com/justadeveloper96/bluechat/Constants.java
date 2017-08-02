@@ -40,4 +40,6 @@ public class Constants {
 
     public static String[] ERROR_MSG={"Connecting...","Connected","Connection failed","Ready to connect..","Listening failed","Disconnected","Typing..."};
 
+    public static final String LAST_SEEN=".,^&4";
+
 }

@@ -6,7 +6,9 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -35,7 +37,7 @@ import static helpers.Utils.getContext;
  */
 
 
-public class MainActivity extends BlueActivity implements ItemClickListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements ItemClickListener, View.OnClickListener {
 
 
     private RecyclerView recyclerView;
@@ -58,8 +60,10 @@ public class MainActivity extends BlueActivity implements ItemClickListener, Vie
 
     private void init() {
 
+
         startService(new Intent(this, CleanUpService.class));
 
+        getSupportActionBar().setTitle("Chats");
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
         ll_empty= (LinearLayout) findViewById(R.id.ll_empty);
@@ -73,8 +77,12 @@ public class MainActivity extends BlueActivity implements ItemClickListener, Vie
 
         cAdapter=new ContactsAdapter(this,list,this);
 
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this,DividerItemDecoration.HORIZONTAL);
+
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(cAdapter);
     }

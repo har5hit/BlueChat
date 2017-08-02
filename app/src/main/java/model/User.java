@@ -30,6 +30,8 @@ public class User extends RealmObject{
     public long last_msg_time;
     public long last_read_time;
 
+    public long last_seen_time;
+
     @Override
     public String toString() {
         return "User{" +

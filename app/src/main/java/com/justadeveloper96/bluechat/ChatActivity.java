@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.transition.TransitionManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -38,11 +39,13 @@ import model.MessageEvent;
 import model.SocketEvent;
 import model.User;
 
+import static com.justadeveloper96.bluechat.Constants.LAST_SEEN;
+
 /**
  * Created by Harshith on 20/7/17.
  */
 
-public class ChatActivity extends BlueActivity implements View.OnClickListener, View.OnLayoutChangeListener {
+public class ChatActivity extends AppCompatActivity implements View.OnClickListener, View.OnLayoutChangeListener {
 
     private RecyclerView rv;
     private EditText message;
@@ -193,6 +196,13 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
                 MyApplication.closeBluetoothService(macAddress_other);
                 connection=null;
             } else {
+
+                if (!BlueHelper.getBluetoothAdapter().isEnabled())
+                {
+                    BlueHelper.init(this);
+                    return true;
+                }
+
                 if (device_other.getBondState()!=BluetoothDevice.BOND_BONDED)
                 {
                     device_other.createBond();
@@ -354,8 +364,8 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
 
     public void onChatDisconnected()
     {
-        connection=null;
         isConnected=false;
+        connection=null;
         if (btn_connect!=null) {
             btn_connect.setTitle(R.string.menu_connect);
             btn_connect.setEnabled(true);
@@ -366,6 +376,7 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
     protected void onPause() {
         EventBus.getDefault().unregister(this);
         MyApplication.currentWindow="";
+        sendLastSeen();
         saveData();
 
         try{
@@ -379,6 +390,13 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
             e.printStackTrace();
         }
         super.onPause();
+    }
+
+    private void sendLastSeen() {
+        if (isConnected)
+        {
+            connection.write(LAST_SEEN);
+        }
     }
 
     private void saveData() {
@@ -468,5 +486,30 @@ public class ChatActivity extends BlueActivity implements View.OnClickListener, 
             pagination_done=true;
             cAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode==BlueHelper.REQUEST_ENABLE_BT && resultCode==RESULT_CANCELED)
+        {
+            Utils.showToast(this,"Please turn on the Bluetooth");
+            return;
+        }
+
+        if (requestCode==BlueHelper.REQUEST_ENABLE_BT && resultCode==RESULT_OK)
+        {
+            if (device_other.getBondState()!=BluetoothDevice.BOND_BONDED)
+            {
+                device_other.createBond();
+                return;
+            }
+
+            startThread(MODE_CONNECT);
+            btn_connect.setEnabled(false);
+        }
+
+
     }
 }
