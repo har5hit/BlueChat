@@ -1,8 +1,6 @@
 package com.justadeveloper96.bluechat;
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -21,7 +19,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -140,23 +137,22 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             openProfile();
-        }else if(id==R.id.action_send)
+        }
+        else if(id==R.id.action_share)
         {
-            final PackageManager pm = getPackageManager();
-//get a list of installed apps.
-            PackageInfo packages = null;
-            try {
-                packages = pm.getPackageInfo(getApplicationContext().getPackageName(), PackageManager.GET_META_DATA);
-                Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-                File file = new File(packages.applicationInfo.sourceDir);
-                sharingIntent.setType("text/plain");
-                sharingIntent.setPackage("com.android.bluetooth");
-                sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
-                startActivity(Intent.createChooser(sharingIntent, "Send App"));
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("text/plain");
+            i.putExtra(Intent.EXTRA_SUBJECT, "BlueChat");
+            String sAux = "\nCheck this cool Bluetooth chat app\n\n";
+            sAux = sAux + "https://play.google.com/store/apps/details?id=com.justadeveloper96.bluechat \n\n";
+            i.putExtra(Intent.EXTRA_TEXT, sAux);
+            startActivity(Intent.createChooser(i, "Share on"));
+        }else if(id==R.id.action_like)
+        {
 
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.justadeveloper96.bluechat"));
+            startActivity(intent);
         }
         return true;
     }

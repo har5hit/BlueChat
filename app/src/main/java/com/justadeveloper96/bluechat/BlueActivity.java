@@ -1,8 +1,9 @@
 package com.justadeveloper96.bluechat;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 
 import helpers.bluetooth.BlueHelper;
 
@@ -15,6 +16,12 @@ public class BlueActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }catch (Exception e)
+        {
+         e.printStackTrace();
+        }
     }
 
     @Override
@@ -37,5 +44,15 @@ public class BlueActivity extends AppCompatActivity {
         {
             BlueHelper.setDiscoverable(this);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId()==android.R.id.home)
+        {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

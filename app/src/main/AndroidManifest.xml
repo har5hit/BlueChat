@@ -31,7 +31,8 @@
         <activity android:name=".BlueActivity" />
         <activity
             android:name=".ProfileActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:label="Profile"/>
         <activity
             android:name=".ChatActivity"
             android:parentActivityName=".MainActivity"

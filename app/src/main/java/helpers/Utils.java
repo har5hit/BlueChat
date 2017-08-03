@@ -516,7 +516,10 @@ public class Utils {
 
     public static void log(String tag,String k)
     {
-        Log.d(tag,k.toString());
+        if (BuildConfig.DEBUG)
+        {
+            Log.d(tag,k.toString());
+        }
     }
 
     public static void log(String k)
