@@ -4,7 +4,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import helpers.RealmHelper;
+import helpers.RealmManager;
 import helpers.Utils;
+import io.realm.Realm;
 
 import static helpers.MyApplication.BLUETOOTHSERVICE;
 
@@ -24,12 +27,23 @@ public class CleanUpService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         try {
-            BLUETOOTHSERVICE.close();
-            Utils.showToast(getApplicationContext(),"BlueChat Disconnected");
+            RealmManager.getRealm().close();
+            Realm.compactRealm(RealmHelper.getRealmConfig());
         }catch (Exception e)
         {
             e.printStackTrace();
         }
+
+        try {
+            if (BLUETOOTHSERVICE!=null) {
+                BLUETOOTHSERVICE.close();
+            }
+            Utils.showToast(getApplicationContext(), "BlueChat Disconnected");
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
         Utils.log("app killed");
         stopSelf();
         super.onTaskRemoved(rootIntent);

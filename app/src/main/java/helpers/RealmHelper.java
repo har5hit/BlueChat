@@ -18,12 +18,17 @@ public class RealmHelper {
     RealmHelper(Context ctx)
     {
         Realm.init(ctx);
-        RealmConfiguration config = new RealmConfiguration
+        RealmConfiguration config = getRealmConfig();
+        Realm.setDefaultConfiguration(config);
+        realm = Realm.getDefaultInstance();
+    }
+
+    public static RealmConfiguration getRealmConfig()
+    {
+        return new RealmConfiguration
                 .Builder()
                 .deleteRealmIfMigrationNeeded()
                 .build();
-        Realm.setDefaultConfiguration(config);
-        realm = Realm.getDefaultInstance();
     }
 
 
