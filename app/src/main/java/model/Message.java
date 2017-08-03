@@ -1,6 +1,7 @@
 package model;
 
 import io.realm.RealmObject;
+import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 
 /**
@@ -32,6 +33,7 @@ public class Message extends RealmObject {
 
     public String user_mac;
 
+    @Index
     public int id;
 
     @PrimaryKey

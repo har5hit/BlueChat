@@ -188,6 +188,11 @@ public class SearchActivity extends BlueActivity implements Runnable, ItemClickL
     }
 
     @Override
+    public void onItemLongClick(int position) {
+
+    }
+
+    @Override
     public void onPermissionGranted(int request_code) {
         Utils.log("permission granted");
         startScanner();

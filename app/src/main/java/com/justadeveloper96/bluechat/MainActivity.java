@@ -8,9 +8,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -22,8 +24,11 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import helpers.MyApplication;
 import helpers.RealmManager;
 import helpers.bluetooth.CleanUpService;
+import io.realm.Realm;
+import model.Message;
 import model.MessageEvent;
 import model.User;
 
@@ -42,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
 
     public List<User> list;
     FloatingActionButton fab;
-
 
     private LinearLayout ll_empty;
 
@@ -166,7 +170,49 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
     }
 
     @Override
+    public void onItemLongClick(final int position) {
+        final PopupMenu popup = new PopupMenu(this, recyclerView.getChildAt(position));
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.user_actions, popup.getMenu());
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId()==R.id.action_delete)
+                {
+                    recyclerView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            final int m_id=list.get(position).message_id;
+                            final String mac=list.get(position).macAddress;
+                            list.remove(position);
+                            cAdapter.notifyItemRemoved(position);
+                            try {
+                                MyApplication.closeBluetoothService(mac);
+                            }catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+
+                            RealmManager.getRealm().executeTransaction(new Realm.Transaction() {
+                                @Override
+                                public void execute(Realm realm) {
+                                    realm.where(User.class).equalTo("macAddress",mac).findFirst().deleteFromRealm();
+                                    realm.where(Message.class).equalTo("id", m_id).findAll().deleteAllFromRealm();
+                                }
+                            });
+                        }
+                    });
+
+                }
+                return true;
+            }
+        });
+        popup.show();
+    }
+
+    @Override
     public void onClick(View v) {
         startActivity(new Intent(MainActivity.this,SearchActivity.class));
     }
+
 }
