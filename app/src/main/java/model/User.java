@@ -1,6 +1,7 @@
 package model;
 
 import io.realm.RealmObject;
+import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 
 /**
@@ -22,6 +23,7 @@ public class User extends RealmObject{
     public String device_name;
     public int message_id;
 
+    @Index
     @PrimaryKey
     public String macAddress;
 

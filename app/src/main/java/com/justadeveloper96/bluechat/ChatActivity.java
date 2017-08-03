@@ -447,7 +447,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             current_msg_count=  (current_msg_count<total_msg_count)?current_msg_count:total_msg_count;
             list.addAll(chat_db.subList(list.size(),current_msg_count));
             pagination_done=true;
-            cAdapter.notifyDataSetChanged();
+            rv.post(new Runnable() {
+                @Override
+                public void run() {
+                    cAdapter.notifyDataSetChanged();
+                }
+            });
         }
     }
 
