@@ -168,7 +168,7 @@ public class MyApplication extends Application {
 
         android.support.v4.app.NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_action_send)
+                        .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(user_name)
                         .setContentText(data)
                         .setNumber(++count)
