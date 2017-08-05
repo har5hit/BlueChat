@@ -1,6 +1,7 @@
 package com.justadeveloper96.bluechat;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,7 @@ import java.util.List;
 
 import helpers.MyApplication;
 import helpers.RealmManager;
+import helpers.Utils;
 import helpers.bluetooth.CleanUpService;
 import io.realm.Realm;
 import model.Message;
@@ -141,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         if (id == R.id.action_settings) {
             openProfile();
         }
-        /*else if(id==R.id.action_share)
+        else if(id==R.id.action_share)
         {
             Intent i = new Intent(Intent.ACTION_SEND);
             i.setType("text/plain");
@@ -153,10 +155,13 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         }else if(id==R.id.action_like)
         {
 
-            Intent intent = new Intent(Intent.ACTION_VIEW);
+            Uri marketUri = Uri.parse("market://details?id=" + getPackageName());
+            Utils.log("market url"+marketUri.toString());
+            startActivity(new Intent(Intent.ACTION_VIEW).setData(marketUri));
+           /* Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.justadeveloper96.bluechat"));
-            startActivity(intent);
-        }*/
+            startActivity(intent);*/
+        }
         return true;
     }
 
